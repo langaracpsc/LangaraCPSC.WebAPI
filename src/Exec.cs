@@ -123,6 +123,16 @@ namespace LangaraCPSC.WebAPI
             this.DatabaseConnection.UpdateRecord(new Record(new string[]{"ID"}, new object[]{ id }), records[0], this.ExecTableName);
         }
 
+        
+        /// <summary>
+        /// Checks and creates the the exec table if it doesnt exist
+        /// </summary>
+        public void AssertTable()
+        {
+            if (!this.DatabaseConnection.TableExists(this.ExecTableName))
+                this.DatabaseConnection.ExecuteQuery(this.ExecTable.GetCreateQuery());
+        }
+
         public ExecManager(DatabaseConfiguration databaseConfiguration, string execTable = "Execs")
         {
             this.DatabaseConnection = new PostGRESDatabase(databaseConfiguration);
@@ -137,7 +147,9 @@ namespace LangaraCPSC.WebAPI
                 new Field("LastName", FieldType.VarChar, new Flag[] {} , 64),
                 new Field("Position", FieldType.Int, new Flag[]{ Flag.NotNull }),
                 new Field("Start", FieldType.VarChar, new Flag[] { Flag.NotNull }, 64)
-            }); 
+            });
+            
+            this.AssertTable();
         }
     }
 }
