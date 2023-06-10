@@ -1,7 +1,4 @@
-using System.Reflection.Metadata;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using Microsoft.AspNetCore.Routing.Constraints;
+using Newtonsoft.Json;
 using OpenDatabase;
 using OpenDatabaseAPI;
 
@@ -69,19 +66,25 @@ namespace LangaraCPSC.WebAPI
                 "FirstName",
                 "LastName",
                 "Position",
-                "Start",
-                "End"
+                "TenureStart",
+                "TenureEnd"
             }, new object[] {
                 this.ID,
                 this.Name.FirstName,
                 this.Name.LastName,
-                (int)this.Position 
+                (int)this.Position,
+                this.Tenure.Start.ToString(), 
+                (this.Tenure.End == new DateTime()) ? null : this.Tenure.End.ToString()
             });
         }
 
         public static Exec FromRecord(Record record)
         {
-            return new Exec(record.Values[0].ToString(), new ExecName(record.Values[1].ToString(), record.Values[2].ToString()), (ExecPosition)((int)record.Values[3]), new ExecTenure(DateTime.Parse(record.Values[4].ToString()), DateTime.Parse(record.Values[5].ToString())));
+               return new Exec(record.Values[0].ToString(),
+                        new ExecName(record.Values[1].ToString(), record.Values[2].ToString()),
+                        (ExecPosition)((int)record.Values[3]),
+                        new ExecTenure(DateTime.Parse(record.Values[4].ToString()), 
+                        ((record.Values[5] == null || record.Values[5] == "")) ? new DateTime() : DateTime.Parse(record.Values[5].ToString())));
         }
         public Exec(string id, ExecName name, ExecPosition position, ExecTenure tenure)
         {
@@ -120,17 +123,35 @@ namespace LangaraCPSC.WebAPI
             if (records.Length < 1)
                 throw new Exception($"Exec with ID \"{id}\" not found.");
 
-            this.DatabaseConnection.UpdateRecord(new Record(new string[]{"ID"}, new object[]{ id }), records[0], this.ExecTableName);
-        }
+            Exec exec = Exec.FromRecord(records[0]);
 
+            exec.Tenure = new ExecTenure(exec.Tenure.Start, DateTime.Now);
+            
+            this.DatabaseConnection.UpdateRecord(new Record(new string[]{"ID"}, new object[] { id }), exec.ToRecord(), this.ExecTableName);
+        }
         
         /// <summary>
         /// Checks and creates the the exec table if it doesnt exist
         /// </summary>
         public void AssertTable()
         {
-            if (!this.DatabaseConnection.TableExists(this.ExecTableName))
+            bool b;
+            if (!(b = this.DatabaseConnection.TableExists(this.ExecTableName)))
                 this.DatabaseConnection.ExecuteQuery(this.ExecTable.GetCreateQuery());
+
+            Console.WriteLine(b);
+        }
+
+        public List<Exec> GetExecs()
+        {
+            List<Exec> execs = new List<Exec>();
+
+            Record[] fetchedRecords = this.DatabaseConnection.FetchQueryData($"SELECT * FROM {this.ExecTableName}", this.ExecTableName);
+
+            for (int x = 0; x < fetchedRecords.Length; x++)
+                execs.Add(Exec.FromRecord(fetchedRecords[x]));
+
+            return execs;
         }
 
         public ExecManager(DatabaseConfiguration databaseConfiguration, string execTable = "Execs")
@@ -142,13 +163,16 @@ namespace LangaraCPSC.WebAPI
             this.DatabaseConnection.Connect();
 
             this.ExecTable = new Table(this.ExecTableName, new Field[] {
-                new Field("ID", FieldType.Char, new Flag[]{ Flag.PrimaryKey, Flag.NotNull }, 32),
+                new Field("ID", FieldType.Char, new Flag[]{ Flag.PrimaryKey, Flag.NotNull }, 36),
                 new Field("FirstName", FieldType.VarChar, new Flag[] { Flag.NotNull }, 64),
                 new Field("LastName", FieldType.VarChar, new Flag[] {} , 64),
                 new Field("Position", FieldType.Int, new Flag[]{ Flag.NotNull }),
-                new Field("Start", FieldType.VarChar, new Flag[] { Flag.NotNull }, 64)
+                new Field("TenureStart", FieldType.VarChar, new Flag[] { Flag.NotNull }, 64),
+                new Field("TenureEnd", FieldType.VarChar, new Flag[] { }, 64)
             });
-            
+
+            Console.WriteLine(this.ExecTable.GetCreateQuery());
+                
             this.AssertTable();
         }
     }

@@ -15,8 +15,4 @@
     <ProjectReference Include="opendatabaseapi\OpenDatabaseAPI.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Controllers" />
-  </ItemGroup>
-
 </Project>
