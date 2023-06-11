@@ -153,7 +153,8 @@ namespace LangaraCPSC.WebAPI
 
             return execs;
         }
-
+       
+        
         public ExecManager(DatabaseConfiguration databaseConfiguration, string execTable = "Execs")
         {
             this.DatabaseConnection = new PostGRESDatabase(databaseConfiguration);
@@ -172,7 +173,9 @@ namespace LangaraCPSC.WebAPI
             });
 
             Console.WriteLine(this.ExecTable.GetCreateQuery());
-                
+    
+            Console.WriteLine(databaseConfiguration.GetConnectionString(SQLClientType.PostGRES));
+            
             this.AssertTable();
         }
     }

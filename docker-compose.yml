@@ -1,0 +1,37 @@
+version: '3.4'
+
+networks:
+  langaracpsc-dev:
+    driver: bridge 
+
+services:
+  postgres_image:
+    image: postgres:latest
+      #    ports:
+      #      - "5432:5432"
+    restart: always
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "password"
+    networks:
+      - langaracpsc-dev
+  
+  langaracpsc.webapi:
+    image: langaracpsc.webapi:latest
+    depends_on:
+      - "postgres_image"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80"     
+    networks:
+      - langaracpsc-dev  
+  
+
+volumes:
+  db_volume:
+         
+    
