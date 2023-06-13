@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -11,15 +12,21 @@ public class ExecController : ControllerBase
     public async Task<string> Get()
     {
         return await Task.Run(() => {
-            return JsonConvert.SerializeObject(Services.ExecManagerInstance.GetExecs());
+            return new HttpObject(HttpReturnType.Success, JsonConvert.SerializeObject(Services.ExecManagerInstance.GetExecs())).ToJson();
         });        
     }
 
     [HttpGet("Profile/{id}")]
     public async Task<string> GetProfile([FromRoute]string id)
     {
-        return await Task.Run(() => {
-            return id;
+        return await Task.Run(() =>
+        {
+            ExecProfile profile = Services.ExecProfileManagerInstance.GetProfileById(id);
+
+            if ((profile = Services.ExecProfileManagerInstance.GetProfileById(id)) == null)
+                return new HttpObject(HttpReturnType.Error, $"Exec profile with {id} not found.").ToJson();
+            
+            return new HttpObject(HttpReturnType.Success, profile.ToJson()).ToJson();
         });
     }
 

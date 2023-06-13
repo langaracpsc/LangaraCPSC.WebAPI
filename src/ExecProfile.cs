@@ -1,10 +1,11 @@
 using System.Runtime.CompilerServices;
+using Newtonsoft.Json;
 using OpenDatabase;
 using OpenDatabaseAPI;
 
 namespace LangaraCPSC.WebAPI
 {
-    public class ExecProfile : IRecord
+    public class ExecProfile : IRecord, IPayload
     {
         public string ID;
 
@@ -30,6 +31,11 @@ namespace LangaraCPSC.WebAPI
         public static ExecProfile FromRecord(Record record)
         {
             return new ExecProfile(record.Values[0].ToString(), record.Values[1].ToString(), record.Values[2].ToString());
+        }
+
+        public string ToJson()
+        {
+            return JsonConvert.SerializeObject(this);
         }
 
         public ExecProfile(string id, string imageID, string description)
@@ -74,17 +80,30 @@ namespace LangaraCPSC.WebAPI
             return profile;
         }
 
+        public bool DeleteProfileWithID(string id)
+        {
+            return this.DatabaseInstance.ExecuteQuery($"DELETE FROM {this.ExecProfileTable.Name} WHERE ID=\'{this.ExecProfileTable.Name}\';");      
+        }
+
+        private void AssertTable()
+        {
+            if (!this.DatabaseInstance.TableExists(this.ExecProfileTable.Name))
+                this.DatabaseInstance.ExecuteQuery(this.ExecProfileTable.GetCreateQuery());
+        }
+
+
         public ExecProfileManager(DatabaseConfiguration configuration, string tableName = "ExecProfiles")
         {
             this.DatabaseInstance = new PostGRESDatabase(configuration);
             this.ProfileMap = new Dictionary<string, ExecProfile>();
 
-            this.ExecProfileTable = new Table(tableName, new Field[]
-            {
+            this.ExecProfileTable = new Table(tableName, new Field[] {
                 new Field("ID", FieldType.Char, new Flag[] { Flag.NotNull, Flag.PrimaryKey }, 36),
                 new Field("ImageID", FieldType.Char, new Flag[] { Flag.NotNull }, 36 ),
                 new Field("Description", FieldType.VarChar, new Flag[] { Flag.NotNull, Flag.PrimaryKey }, 10000)
             });
+            
+            this.AssertTable();
         }
     }
 } 

@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using OpenDatabase;
+using OpenDatabase.Json;
 using OpenDatabaseAPI;
 
 namespace LangaraCPSC.WebAPI
@@ -49,7 +50,7 @@ namespace LangaraCPSC.WebAPI
     /// <summary>
     /// Stores info about an Exec
     /// </summary>
-    public class Exec : IRecord
+    public class Exec : IRecord, IPayload
     {
         public string ID { get; set; }
 
@@ -86,6 +87,12 @@ namespace LangaraCPSC.WebAPI
                         new ExecTenure(DateTime.Parse(record.Values[4].ToString()), 
                         ((record.Values[5] == null || record.Values[5] == "")) ? new DateTime() : DateTime.Parse(record.Values[5].ToString())));
         }
+
+        public string ToJson()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
+
         public Exec(string id, ExecName name, ExecPosition position, ExecTenure tenure)
         {
             this.ID = id;

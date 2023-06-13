@@ -32,8 +32,11 @@ namespace LangaraCPSC.WebAPI
 
             app.MapControllers();
 
-            Services.ExecManagerInstance = new ExecManager(DatabaseConfiguration.LoadFromFile("DatabaseConfig.json"));
-
+            DatabaseConfiguration config;
+                
+            Services.ExecManagerInstance = new ExecManager(config = DatabaseConfiguration.LoadFromFile("DatabaseConfig.json"));
+            Services.ExecProfileManagerInstance = new ExecProfileManager(config); 
+            
             Services.ExecManagerInstance.CreateExec(new ExecName("David", "Bowie"), ExecPosition.President, new ExecTenure(DateTime.Now, new DateTime()));
                 
             app.Run();
