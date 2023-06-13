@@ -102,23 +102,26 @@ namespace LangaraCPSC.WebAPI
 
         public string ExecTableName;
 
-        protected Table ExecTable; 
-        
+        protected Table ExecTable;
+
         public Dictionary<string, Exec> ExecMap;
 
         public Exec CreateExec(ExecName name, ExecPosition position, ExecTenure tenure)
         {
             Exec exec;
-            
-            this.DatabaseConnection.InsertRecord((exec = new Exec(Guid.NewGuid().ToString(), name, position, tenure)).ToRecord(), this.ExecTableName);
+
+            this.DatabaseConnection.InsertRecord(
+                (exec = new Exec(Guid.NewGuid().ToString(), name, position, tenure)).ToRecord(), this.ExecTableName);
             this.ExecMap.Add(exec.ID, exec);
-            
+
             return exec;
         }
 
         public void EndTenure(string id)
         {
-            Record[] records = this.DatabaseConnection.FetchQueryData($"SELECT * FROM {this.ExecTableName} WHERE ID=\'{id}\'", this.ExecTableName);
+            Record[] records =
+                this.DatabaseConnection.FetchQueryData($"SELECT * FROM {this.ExecTableName} WHERE ID=\'{id}\'",
+                    this.ExecTableName);
 
             if (records.Length < 1)
                 throw new Exception($"Exec with ID \"{id}\" not found.");
@@ -126,10 +129,11 @@ namespace LangaraCPSC.WebAPI
             Exec exec = Exec.FromRecord(records[0]);
 
             exec.Tenure = new ExecTenure(exec.Tenure.Start, DateTime.Now);
-            
-            this.DatabaseConnection.UpdateRecord(new Record(new string[]{"ID"}, new object[] { id }), exec.ToRecord(), this.ExecTableName);
+
+            this.DatabaseConnection.UpdateRecord(new Record(new string[] { "ID" }, new object[] { id }),
+                exec.ToRecord(), this.ExecTableName);
         }
-        
+
         /// <summary>
         /// Checks and creates the the exec table if it doesnt exist
         /// </summary>
@@ -153,8 +157,7 @@ namespace LangaraCPSC.WebAPI
 
             return execs;
         }
-       
-        
+
         public ExecManager(DatabaseConfiguration databaseConfiguration, string execTable = "Execs")
         {
             this.DatabaseConnection = new PostGRESDatabase(databaseConfiguration);

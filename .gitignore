@@ -1,6 +1,7 @@
 .idea/
 obj/
 bin/
+data/
 .logs
 DatabaseConfig.json
 
