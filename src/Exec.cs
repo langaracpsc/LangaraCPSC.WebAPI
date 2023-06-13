@@ -40,7 +40,7 @@ namespace LangaraCPSC.WebAPI
 
         public DateTime End;
 
-        public ExecTenure(DateTime start, DateTime end)
+        public ExecTenure(DateTime start, DateTime end = new DateTime())
         {
             this.Start = start;
             this.End = end;

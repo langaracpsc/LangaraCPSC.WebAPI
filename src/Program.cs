@@ -37,7 +37,7 @@ namespace LangaraCPSC.WebAPI
             Services.ExecManagerInstance = new ExecManager(config = DatabaseConfiguration.LoadFromFile("DatabaseConfig.json"));
             Services.ExecProfileManagerInstance = new ExecProfileManager(config); 
             
-            Services.ExecManagerInstance.CreateExec(new ExecName("David", "Bowie"), ExecPosition.President, new ExecTenure(DateTime.Now, new DateTime()));
+            //Services.ExecManagerInstance.CreateExec(new ExecName("David", "Bowie"), ExecPosition.President, new ExecTenure(DateTime.Now, new DateTime()));
                 
             app.Run();
         }

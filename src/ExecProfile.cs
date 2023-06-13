@@ -97,10 +97,12 @@ namespace LangaraCPSC.WebAPI
             this.DatabaseInstance = new PostGRESDatabase(configuration);
             this.ProfileMap = new Dictionary<string, ExecProfile>();
 
+            this.DatabaseInstance.Connect();
+
             this.ExecProfileTable = new Table(tableName, new Field[] {
                 new Field("ID", FieldType.Char, new Flag[] { Flag.NotNull, Flag.PrimaryKey }, 36),
                 new Field("ImageID", FieldType.Char, new Flag[] { Flag.NotNull }, 36 ),
-                new Field("Description", FieldType.VarChar, new Flag[] { Flag.NotNull, Flag.PrimaryKey }, 10000)
+                new Field("Description", FieldType.VarChar, new Flag[] { Flag.NotNull }, 10000)
             });
             
             this.AssertTable();
