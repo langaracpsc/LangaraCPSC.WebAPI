@@ -42,7 +42,7 @@ namespace LangaraCPSC.WebAPI.Controllers
 
                 Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
 
-                if ((exec = Services.ExecManagerInstance.CreateExec(new ExecName(requestMap["FirstName"].ToString(), requestMap["FirstName"].ToString()), (ExecPosition)(long)requestMap["Position"], new ExecTenure(DateTime.Now))) == null)
+                if ((exec = Services.ExecManagerInstance.CreateExec((long)requestMap["StudentID"], new ExecName(requestMap["FirstName"].ToString(), requestMap["FirstName"].ToString()), (ExecPosition)(long)requestMap["Position"], new ExecTenure(DateTime.Now))) == null)
                     return new HttpObject(HttpReturnType.Error, "Failed to create exec.").ToJson();
 
                 return new HttpObject(HttpReturnType.Success, exec.ToJson()).ToJson();
@@ -53,4 +53,4 @@ namespace LangaraCPSC.WebAPI.Controllers
         {
         }
     }
-}
+} 

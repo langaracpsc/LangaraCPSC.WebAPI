@@ -52,7 +52,7 @@ namespace LangaraCPSC.WebAPI
     /// </summary>
     public class Exec : IRecord, IPayload
     {
-        public string ID { get; set; }
+        public long ID { get; set; }
 
         public ExecName Name { get; set; }
 
@@ -81,7 +81,7 @@ namespace LangaraCPSC.WebAPI
 
         public static Exec FromRecord(Record record)
         {
-               return new Exec(record.Values[0].ToString(),
+               return new Exec((long)record.Values[0],
                         new ExecName(record.Values[1].ToString(), record.Values[2].ToString()),
                         (ExecPosition)((int)record.Values[3]),
                         new ExecTenure(DateTime.Parse(record.Values[4].ToString()), 
@@ -93,7 +93,7 @@ namespace LangaraCPSC.WebAPI
             return JsonConvert.SerializeObject(this);
         }
 
-        public Exec(string id, ExecName name, ExecPosition position, ExecTenure tenure)
+        public Exec(long id, ExecName name, ExecPosition position, ExecTenure tenure)
         {
             this.ID = id;
             this.Name = name;
@@ -111,14 +111,14 @@ namespace LangaraCPSC.WebAPI
 
         protected Table ExecTable;
 
-        public Dictionary<string, Exec> ExecMap;
+        public Dictionary<long, Exec> ExecMap;
 
-        public Exec CreateExec(ExecName name, ExecPosition position, ExecTenure tenure)
+        public Exec CreateExec(long studentID, ExecName name, ExecPosition position, ExecTenure tenure)
         {
             Exec exec;
 
             this.DatabaseConnection.InsertRecord(
-                (exec = new Exec(Guid.NewGuid().ToString(), name, position, tenure)).ToRecord(), this.ExecTableName);
+                (exec = new Exec(studentID, name, position, tenure)).ToRecord(), this.ExecTableName);
             this.ExecMap.Add(exec.ID, exec);
 
             return exec;
@@ -169,7 +169,7 @@ namespace LangaraCPSC.WebAPI
         {
             this.DatabaseConnection = new PostGRESDatabase(databaseConfiguration);
             this.ExecTableName = execTable;
-            this.ExecMap = new Dictionary<string, Exec>();
+            this.ExecMap = new Dictionary<long, Exec>();
             
             this.DatabaseConnection.Connect();
 
@@ -181,10 +181,6 @@ namespace LangaraCPSC.WebAPI
                 new Field("TenureStart", FieldType.VarChar, new Flag[] { Flag.NotNull }, 64),
                 new Field("TenureEnd", FieldType.VarChar, new Flag[] { }, 64)
             });
-
-            Console.WriteLine(this.ExecTable.GetCreateQuery());
-    
-            Console.WriteLine(databaseConfiguration.GetConnectionString(SQLClientType.PostGRES));
             
             this.AssertTable();
         }
