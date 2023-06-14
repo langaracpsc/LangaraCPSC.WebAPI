@@ -124,10 +124,10 @@ namespace LangaraCPSC.WebAPI
             return exec;
         }
 
-        public void EndTenure(string id)
+        public void EndTenure(long id)
         {
             Record[] records =
-                this.DatabaseConnection.FetchQueryData($"SELECT * FROM {this.ExecTableName} WHERE ID=\'{id}\'",
+                this.DatabaseConnection.FetchQueryData($"SELECT * FROM {this.ExecTableName} WHERE ID={id}",
                     this.ExecTableName);
 
             if (records.Length < 1)
