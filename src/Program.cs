@@ -1,5 +1,7 @@
 using System.Runtime.CompilerServices;
+using KeyMan;
 using OpenDatabase;
+using OpenDatabaseAPI;
 
 namespace LangaraCPSC.WebAPI
 {
@@ -33,13 +35,14 @@ namespace LangaraCPSC.WebAPI
             app.MapControllers();
 
             DatabaseConfiguration config;
-                
-            Services.ExecManagerInstance = new ExecManager(config = DatabaseConfiguration.LoadFromFile("DatabaseConfig.json"));
-            Services.ExecProfileManagerInstance = new ExecProfileManager(config); 
             
-            //Services.ExecManagerInstance.CreateExec(new ExecName("David", "Bowie"), ExecPosition.President, new ExecTenure(DateTime.Now, new DateTime()));
-                
+            Services.ExecManagerInstance = new ExecManager(config = DatabaseConfiguration.LoadFromFile("DatabaseConfig.json"));
+            Services.ExecProfileManagerInstance = new ExecProfileManager(config);
+            Services.APIKeyManagerInstance = new APIKeyManager(new PostGRESDatabase(config));
+
+            Services.APIKeyManagerInstance.LoadKeys();
+
             app.Run();
         }
-    }
+     }
 }
