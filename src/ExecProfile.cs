@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Newtonsoft.Json;
 using OpenDatabase;
 using OpenDatabaseAPI;
@@ -54,6 +55,14 @@ namespace LangaraCPSC.WebAPI
 
         public Table ExecProfileTable;
 
+        public bool ProfileExists(string id)
+        {
+            if (this.ProfileMap.ContainsKey(id))
+                return true;
+            
+            return (this.DatabaseInstance.FetchQueryData($"SELECT * FROM {this.ExecProfileTable.Name}", this.ExecProfileTable.Name).Length > 0);
+        }
+
         public void CreateProfile(string id, string imageID, string description)
         {
             ExecProfile profile;
@@ -61,6 +70,21 @@ namespace LangaraCPSC.WebAPI
             this.DatabaseInstance.InsertRecord((profile = new ExecProfile(id, imageID, description)).ToRecord(), this.ExecProfileTable.Name);
             
             this.ProfileMap.Add(id, profile); 
+        }
+
+        public bool UpdateProfile(string id, string imageID, string description)
+        {
+            if (this.ProfileExists(id))
+            {
+                this.DatabaseInstance.UpdateRecord(
+                    new Record(new string[] { "ID" }, new object[] { id }),
+                    new Record(new string[] { "ImageID", "Description" }, new object[] { imageID, description }),
+                    this.ExecProfileTable.Name);
+
+                return true; 
+            }
+
+            return false;
         }
 
         public ExecProfile GetProfileById(string id)
@@ -76,13 +100,16 @@ namespace LangaraCPSC.WebAPI
                 return profile;
             
             this.ProfileMap.Add((profile = ExecProfile.FromRecord(records[0])).ID, profile);
-
+  
             return profile;
         }
 
         public bool DeleteProfileWithID(string id)
         {
-            return this.DatabaseInstance.ExecuteQuery($"DELETE FROM {this.ExecProfileTable.Name} WHERE ID=\'{this.ExecProfileTable.Name}\';");      
+            if (this.ProfileExists(id))
+                return this.DatabaseInstance.ExecuteQuery($"DELETE FROM {this.ExecProfileTable.Name} WHERE ID=\'{this.ExecProfileTable.Name}\';");
+
+            return false;
         }
 
         private void AssertTable()
@@ -90,7 +117,6 @@ namespace LangaraCPSC.WebAPI
             if (!this.DatabaseInstance.TableExists(this.ExecProfileTable.Name))
                 this.DatabaseInstance.ExecuteQuery(this.ExecProfileTable.GetCreateQuery());
         }
-
 
         public ExecProfileManager(DatabaseConfiguration configuration, string tableName = "ExecProfiles")
         {
