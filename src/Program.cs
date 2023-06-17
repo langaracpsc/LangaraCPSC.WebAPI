@@ -42,6 +42,11 @@ namespace LangaraCPSC.WebAPI
 
             Services.APIKeyManagerInstance.LoadKeys();
 
+            // Services.APIKeyManagerInstance.AddAPIKey(new APIKeyBuilder().SetUserID("100401242")
+            //     .SetKeyValidityTime(new KeyValidityTime(DateTime.Now))
+            //     .SetIsLimitless(true)
+            //     .AddPermission("ExecCreate", true).GenerateKey());
+
             app.Run();
         }
      }

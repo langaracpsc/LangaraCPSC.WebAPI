@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using KeyMan;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -34,16 +35,31 @@ namespace LangaraCPSC.WebAPI.Controllers
         }
 
         [HttpPost("Create")]
-        public async Task<string> CreateExec([FromHeader] string request)
+        public async Task<string> CreateExec([FromHeader] string request, [FromHeader] string apiKey)
         {
-            return await Task.Run(() => {
+            return await Task.Run(() =>
+            {
                 Exec exec;
 
                 Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
 
-                if ((exec = Services.ExecManagerInstance.CreateExec((long)requestMap["StudentID"], new ExecName(requestMap["FirstName"].ToString(), requestMap["LastName"].ToString()), (ExecPosition)(long)requestMap["Position"], new ExecTenure(DateTime.Now))) == null)
-                    return new HttpObject(HttpReturnType.Error, "Failed to create exec.").ToJson();
+                APIKey key = Services.APIKeyManagerInstance.GetAPIKey(apiKey);
 
+                if (key == null)
+                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+
+                Console.WriteLine(JsonConvert.SerializeObject(key));  
+                
+                if (key.HasPermission("ExecCreate"))
+                {
+                    if ((exec = Services.ExecManagerInstance.CreateExec((long)requestMap["studentid"],
+                            new ExecName(requestMap["firstname"].ToString(), requestMap["lastname"].ToString()),
+                            (ExecPosition)(long)requestMap["position"], new ExecTenure(DateTime.Now))) == null)
+                        return new HttpError(HttpErrorType.InvalidParamatersError, "Failed to create exec.").ToJson();
+                }
+                else
+                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+                
                 return new HttpObject(HttpReturnType.Success, exec.ToJson()).ToJson();
             });
         }

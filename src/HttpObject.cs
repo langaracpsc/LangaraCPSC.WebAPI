@@ -13,9 +13,12 @@ namespace LangaraCPSC.WebAPI
 
     public enum HttpErrorType
     {
+        Unknown = -1,
         FileNotFoundError,
         InvalidKeyError,
-        InvalidQueryException
+        InvalidQueryException,
+        InvalidParamatersError,
+        Forbidden
     }
 
     public class HttpObject
