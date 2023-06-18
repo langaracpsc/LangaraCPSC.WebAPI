@@ -21,7 +21,7 @@ namespace LangaraCPSC.WebAPI.Controllers
         }
 
         [HttpGet("Profile/{id}")]
-        public async Task<string> GetProfile([FromRoute] string id)
+        public async Task<string> GetProfile([FromRoute] string id, [FromHeader] string apiKey)
         {
             return await Task.Run(() =>
             {
@@ -71,18 +71,37 @@ namespace LangaraCPSC.WebAPI.Controllers
 
             long id;
             
-            return await Task.Run(() => {
-                if (!requestMap.ContainsKey("StudentID"))                               
-                    return new HttpObject(HttpReturnType.Error, "Invalid parameters.").ToJson();
-                 
-                Services.ExecManagerInstance.EndTenure(id = (long)requestMap["StudentID"]);
+            return await Task.Run(() =>
+            {
+                if (!requestMap.ContainsKey("apikey"))
+                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+                
+                if (!requestMap.ContainsKey("studentid"))                               
+                    return new HttpError(HttpErrorType.InvalidParamatersError, "Invalid parameters.").ToJson();
+
+                APIKey key;
+                
+                try
+                {
+                    if ((key = Services.APIKeyManagerInstance.GetAPIKey(requestMap["apikey"].ToString())) == null)
+                        return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+                    
+                    if (key.HasPermission("ExecEnd"))
+                        Services.ExecManagerInstance.EndTenure(id = (long)requestMap["studentid"]);
+                    else
+                        return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+                }
+                catch (Exception e)
+                {
+                    return new HttpError(HttpErrorType.Unknown, e.Message).ToJson();
+                }
                 
                 return new HttpObject(HttpReturnType.Success, id).ToJson();
             });
         }
-
+        
         public ExecController()
         {
         }
     }
-} 
+}  
