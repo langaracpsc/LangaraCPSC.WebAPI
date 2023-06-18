@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Http.HttpResults;
+
 namespace LangaraCPSC.WebAPI;
 
 public class FileIO
@@ -38,5 +41,22 @@ public class FileIO
         }
         
         return buffer;
+    }
+
+    public static bool AssertDirectory(string directory)
+    {
+        try
+        {
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+
+            return false;
+        }
+
+        return true;
     }
 } 
