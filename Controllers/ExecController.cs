@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using KeyMan;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Npgsql;
 
 namespace LangaraCPSC.WebAPI.Controllers
 {
@@ -11,8 +12,16 @@ namespace LangaraCPSC.WebAPI.Controllers
     public class ExecController : ControllerBase
     {
         [HttpGet("ListAll")]
-        public async Task<string> Get()
+        public async Task<string> Get([FromHeader] string apikey)
         {
+            APIKey key;
+            
+            if ((key = Services.APIKeyManagerInstance.GetAPIKey(apikey)) == null)
+                return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+           
+            if (!key.HasPermission("ExecRead"))
+                return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+            
             return await Task.Run(() =>
             {
                 return new HttpObject(HttpReturnType.Success,
@@ -21,7 +30,7 @@ namespace LangaraCPSC.WebAPI.Controllers
         }
 
         [HttpGet("Profile/{id}")]
-        public async Task<string> GetProfile([FromRoute] string id, [FromHeader] string apiKey)
+        public async Task<string> GetProfile([FromRoute] string id, [FromHeader] string apikey)
         {
             return await Task.Run(() =>
             {
@@ -35,7 +44,7 @@ namespace LangaraCPSC.WebAPI.Controllers
         }
 
         [HttpPost("Create")]
-        public async Task<string> CreateExec([FromHeader] string request, [FromHeader] string apiKey)
+        public async Task<string> CreateExec([FromHeader] string request, [FromHeader] string apikey)
         {
             return await Task.Run(() =>
             {
@@ -43,7 +52,7 @@ namespace LangaraCPSC.WebAPI.Controllers
 
                 Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
 
-                APIKey key = Services.APIKeyManagerInstance.GetAPIKey(apiKey);
+                APIKey key = Services.APIKeyManagerInstance.GetAPIKey(apikey);
 
                 if (key == null)
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
@@ -97,6 +106,33 @@ namespace LangaraCPSC.WebAPI.Controllers
                 }
                 
                 return new HttpObject(HttpReturnType.Success, id).ToJson();
+            });
+        }
+
+        [HttpPost("Update")]
+        public async Task<string> UpdateExec([FromHeader] string request, [FromHeader] string apikey)
+        {
+            APIKey key;
+
+            Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
+
+            return await Task.Run(() =>
+            {
+                Exec updatedExec = null;
+                try
+                {
+                    if ((key = Services.APIKeyManagerInstance.GetAPIKey(apikey)) == null)
+                        return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+
+                    if (key.HasPermission("ExecUpdate"))
+                        updatedExec = Services.ExecManagerInstance.UpdateExec(requestMap);
+                }
+                catch (Exception e)
+                {
+                    return new HttpError(HttpErrorType.Unknown, e.Message).ToJson();
+                }
+
+                return new HttpObject(HttpReturnType.Success, updatedExec).ToJson();
             });
         }
         

@@ -1,3 +1,4 @@
+using System.Collections;
 using Newtonsoft.Json;
 using OpenDatabase;
 using OpenDatabase.Json;
@@ -113,12 +114,20 @@ namespace LangaraCPSC.WebAPI
 
         public Dictionary<long, Exec> ExecMap;
 
+        protected static string[] ValidKeys = new string[] { 
+            "ID",
+            "FirstName",
+            "LastName",
+            "Position",
+            "TenureStart",
+            "TenureEnd" 
+        };
+        
         public Exec CreateExec(long studentID, ExecName name, ExecPosition position, ExecTenure tenure)
         {
             Exec exec;
 
-            this.DatabaseConnection.InsertRecord(
-                (exec = new Exec(studentID, name, position, tenure)).ToRecord(), this.ExecTableName);
+            this.DatabaseConnection.InsertRecord((exec = new Exec(studentID, name, position, tenure)).ToRecord(), this.ExecTableName);
             this.ExecMap.Add(exec.ID, exec);
 
             return exec;
@@ -165,6 +174,43 @@ namespace LangaraCPSC.WebAPI
             return execs;
         }
 
+        public Exec GetExec(long id)
+        {
+            Record[] records = this.DatabaseConnection.FetchQueryData($"SELECT * FROM {this.ExecTable.Name} WHERE ID={id}", this.ExecTable.Name);
+
+            if (records.Length == 0)
+                return null;
+
+            return Exec.FromRecord(records[0]);
+        }
+
+        protected static bool IsKeyValid(string key)
+        {
+            if (Array.BinarySearch(ExecManager.ValidKeys, key) == -1)
+                return false;
+
+            return true;
+        }
+
+        public Exec UpdateExec(Hashtable updateMap)
+        {
+            string[] keys = new string[updateMap.Keys.Count];
+            object[] values = new object[updateMap.Values.Count];
+
+            long id;
+            
+            updateMap.Values.CopyTo(values, 0);
+            updateMap.Keys.CopyTo(keys,0);
+
+            foreach (string key in keys)
+                if (!ExecManager.IsKeyValid(key))
+                    return null;
+
+            
+            return (this.DatabaseConnection.UpdateRecord(new Record(new string[]{ "ID" }, new object[]{ id = (long)updateMap["ID"] }), new Record(keys, values), this.ExecTableName))  
+                    ? this.GetExec(id) : null;
+        }
+
         public ExecManager(DatabaseConfiguration databaseConfiguration, string execTable = "Execs")
         {
             this.DatabaseConnection = new PostGRESDatabase(databaseConfiguration);
@@ -185,4 +231,7 @@ namespace LangaraCPSC.WebAPI
             this.AssertTable();
         }
     }
-}
+} 
+ 
+ 
+ 
