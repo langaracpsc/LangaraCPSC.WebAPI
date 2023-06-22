@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Newtonsoft.Json;
@@ -8,7 +9,7 @@ namespace LangaraCPSC.WebAPI
 {
     public class ExecProfile : IRecord, IPayload
     {
-        public string ID;
+        public long ID;
 
         public string ImageID;
 
@@ -31,7 +32,7 @@ namespace LangaraCPSC.WebAPI
       
         public static ExecProfile FromRecord(Record record)
         {
-            return new ExecProfile(record.Values[0].ToString(), record.Values[1].ToString(), record.Values[2].ToString());
+            return new ExecProfile((long)record.Values[0], record.Values[1].ToString(), record.Values[2].ToString());
         }
 
         public string ToJson()
@@ -39,7 +40,7 @@ namespace LangaraCPSC.WebAPI
             return JsonConvert.SerializeObject(this);
         }
 
-        public ExecProfile(string id, string imageID, string description)
+        public ExecProfile(long id, string imageID, string description)
         {
             this.ID = id;
             this.ImageID = imageID;
@@ -51,11 +52,11 @@ namespace LangaraCPSC.WebAPI
     {
         private PostGRESDatabase DatabaseInstance;
 
-        private Dictionary<string, ExecProfile> ProfileMap;
+        private Dictionary<long, ExecProfile> ProfileMap;
 
         public Table ExecProfileTable;
 
-        public bool ProfileExists(string id)
+        public bool ProfileExists(long id)
         {
             if (this.ProfileMap.ContainsKey(id))
                 return true;
@@ -63,16 +64,20 @@ namespace LangaraCPSC.WebAPI
             return (this.DatabaseInstance.FetchQueryData($"SELECT * FROM {this.ExecProfileTable.Name}", this.ExecProfileTable.Name).Length > 0);
         }
 
-        public void CreateProfile(string id, string imageID, string description)
+        public ExecProfile CreateProfile(long id, string imageID, string description)
         {
             ExecProfile profile;
 
-            this.DatabaseInstance.InsertRecord((profile = new ExecProfile(id, imageID, description)).ToRecord(), this.ExecProfileTable.Name);
+            if (!this.DatabaseInstance.InsertRecord((profile = new ExecProfile(id, imageID, description)).ToRecord(),
+                    this.ExecProfileTable.Name))
+                return null;
             
-            this.ProfileMap.Add(id, profile); 
+            this.ProfileMap.Add(id, profile);
+
+            return profile;
         }
 
-        public bool UpdateProfile(string id, string imageID, string description)
+        public bool UpdateProfile(long id, string imageID, string description)
         {
             if (this.ProfileExists(id))
             {
@@ -87,7 +92,7 @@ namespace LangaraCPSC.WebAPI
             return false;
         }
 
-        public ExecProfile GetProfileById(string id)
+        public ExecProfile GetProfileById(long id)
         {
             if (this.ProfileMap.ContainsKey(id))
                 return this.ProfileMap[id];
@@ -104,7 +109,20 @@ namespace LangaraCPSC.WebAPI
             return profile;
         }
 
-        public bool DeleteProfileWithID(string id)
+        public ExecProfile UpdateExecProfile(Hashtable updateMap)
+        {
+            string[] keys = new string[updateMap.Keys.Count];
+            object[] values = new object[updateMap.Values.Count];
+
+            long id = (int)updateMap["id"]; 
+            
+            updateMap.Keys.CopyTo(keys, 0);
+            updateMap.Values.CopyTo(values, 0);
+            
+            return (this.DatabaseInstance.UpdateRecord(new Record(new string[]{ "id" }, new object[]{ updateMap["id"]}), new Record(keys, values), this.ExecProfileTable.Name)) ? this.GetProfileById(id) : null; 
+        }
+
+        public bool DeleteProfileWithID(long id)
         {
             if (this.ProfileExists(id))
                 return this.DatabaseInstance.ExecuteQuery($"DELETE FROM {this.ExecProfileTable.Name} WHERE ID=\'{this.ExecProfileTable.Name}\';");
@@ -121,12 +139,12 @@ namespace LangaraCPSC.WebAPI
         public ExecProfileManager(DatabaseConfiguration configuration, string tableName = "ExecProfiles")
         {
             this.DatabaseInstance = new PostGRESDatabase(configuration);
-            this.ProfileMap = new Dictionary<string, ExecProfile>();
+            this.ProfileMap = new Dictionary<long, ExecProfile>();
 
             this.DatabaseInstance.Connect();
 
             this.ExecProfileTable = new Table(tableName, new Field[] {
-                new Field("ID", FieldType.Char, new Flag[] { Flag.NotNull, Flag.PrimaryKey }, 36),
+                new Field("ID", FieldType.Int, new Flag[] { Flag.NotNull, Flag.PrimaryKey }),
                 new Field("ImageID", FieldType.Char, new Flag[] { Flag.NotNull }, 36 ),
                 new Field("Description", FieldType.VarChar, new Flag[] { Flag.NotNull }, 10000)
             });
@@ -135,5 +153,3 @@ namespace LangaraCPSC.WebAPI
         }
     }
 } 
-
- 

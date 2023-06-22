@@ -30,7 +30,7 @@ namespace LangaraCPSC.WebAPI.Controllers
         }
 
         [HttpGet("Profile/{id}")]
-        public async Task<string> GetProfile([FromRoute] string id, [FromHeader] string apikey)
+        public async Task<string> GetProfile([FromRoute] long id, [FromHeader] string apikey)
         {
             return await Task.Run(() =>
             {
@@ -72,6 +72,43 @@ namespace LangaraCPSC.WebAPI.Controllers
                 return new HttpObject(HttpReturnType.Success, exec.ToJson()).ToJson();
             });
         }
+
+        [HttpPost("Profile/Create")]
+        public async Task<string> CreateExecProfile([FromHeader] string request, [FromHeader] string apikey)
+        {
+            return await Task.Run(() =>
+            {
+                ExecProfile execProfile = null;
+
+                Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
+
+                APIKey key = Services.APIKeyManagerInstance.GetAPIKey(apikey);
+
+                if (key == null)
+                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+
+                Console.WriteLine(JsonConvert.SerializeObject(key));
+
+                try
+                {
+                    if (key.HasPermission("ExecCreate"))
+                    {
+                        if ((execProfile = Services.ExecProfileManagerInstance.CreateProfile((long)requestMap["id"], requestMap["imageid"].ToString(), requestMap["description"].ToString())) == null)
+                            return new HttpError(HttpErrorType.InvalidParamatersError, "Failed to create exec.")
+                                .ToJson();
+                    }
+                    else
+                        return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+
+                }
+                catch (Exception e)
+                {
+                }
+
+                return new HttpObject(HttpReturnType.Success, execProfile.ToJson()).ToJson();
+            });
+        }
+        
 
         [HttpPost("End")]
         public async Task<string> EndTenure([FromHeader] string request)
@@ -136,6 +173,35 @@ namespace LangaraCPSC.WebAPI.Controllers
                 return new HttpObject(HttpReturnType.Success, updatedExec).ToJson();
             });
         }
+
+        [HttpPost("Profile/Update")]
+        public async Task<string> UpdateExecProfile([FromHeader] string request, [FromHeader] string apikey)
+        {
+            APIKey key;
+
+            Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
+
+            return await Task.Run(() =>
+            {
+                ExecProfile updatedExecProfile = null;
+                
+                try
+                {
+                    if ((key = Services.APIKeyManagerInstance.GetAPIKey(apikey)) == null)
+                        return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+
+                    if (key.HasPermission("ExecUpdate"))
+                        updatedExecProfile= Services.ExecProfileManagerInstance.UpdateExecProfile(requestMap);
+                }
+                catch (Exception e)
+                {
+                    return new HttpError(HttpErrorType.Unknown, e.Message).ToJson();
+                }
+
+                return new HttpObject(HttpReturnType.Success, updatedExecProfile).ToJson();
+            });
+        }
+        
         
         public ExecController()
         {
