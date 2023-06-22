@@ -119,6 +119,7 @@ namespace LangaraCPSC.WebAPI.Controllers
             return await Task.Run(() =>
             {
                 Exec updatedExec = null;
+                
                 try
                 {
                     if ((key = Services.APIKeyManagerInstance.GetAPIKey(apikey)) == null)

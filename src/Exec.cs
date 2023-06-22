@@ -82,7 +82,7 @@ namespace LangaraCPSC.WebAPI
 
         public static Exec FromRecord(Record record)
         {
-               return new Exec((long)record.Values[0],
+               return new Exec((int)record.Values[0],
                         new ExecName(record.Values[1].ToString(), record.Values[2].ToString()),
                         (ExecPosition)((int)record.Values[3]),
                         new ExecTenure(DateTime.Parse(record.Values[4].ToString()), 
@@ -205,7 +205,6 @@ namespace LangaraCPSC.WebAPI
             foreach (string key in keys)
                 if (!ExecManager.IsKeyValid(key))
                     return null;
-
             
             return (this.DatabaseConnection.UpdateRecord(new Record(new string[]{ "ID" }, new object[]{ id = (long)updateMap["ID"] }), new Record(keys, values), this.ExecTableName))  
                     ? this.GetExec(id) : null;

@@ -41,11 +41,13 @@ namespace LangaraCPSC.WebAPI
             Services.APIKeyManagerInstance = new APIKeyManager(new PostGRESDatabase(config));
 
             Services.APIKeyManagerInstance.LoadKeys();
-
+            //
             // Services.APIKeyManagerInstance.AddAPIKey(new APIKeyBuilder().SetUserID("100401242")
             //     .SetKeyValidityTime(new KeyValidityTime(DateTime.Now))
             //     .SetIsLimitless(true)
-            //     .AddPermission("ExecCreate", true).GenerateKey());
+            //     .AddPermission("ExecCreate", true)
+            //     .AddPermission("ExecDelete", true)
+            //     .AddPermission("ExecUpdate", true).GenerateKey());
 
             app.Run();
         }
