@@ -1,13 +1,15 @@
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using Newtonsoft.Json;
 using OpenDatabase;
 using OpenDatabaseAPI;
 
 namespace LangaraCPSC.WebAPI
 {
 
-    public class ExecImageBase64 : IRecord
+    public class ExecImageBase64 : IRecord, IPayload
     {
-        public string ID;
+        public long ID;
 
 
         public string Path;
@@ -18,12 +20,17 @@ namespace LangaraCPSC.WebAPI
         {
             return FileIO.WriteToFile(this.Buffer, file);
         }
+        
+        public bool SaveToFile()
+        {
+            return FileIO.WriteToFile(this.Buffer, $"{this.ID}.png");
+        }
 
         public static ExecImageBase64 LoadFromFile(string file)
         {
             string[] split = null;
 
-            return new ExecImageBase64((split = file.Split('.'))[0], FileIO.ReadFromFile(file));
+            return new ExecImageBase64(int.Parse((split = file.Split('.'))[0]), FileIO.ReadFromFile(file));
         }
 
         public static ExecImageBase64 FromRecord(Record record)
@@ -40,6 +47,11 @@ namespace LangaraCPSC.WebAPI
             return null;
         }
 
+        public string ToJson()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
+
         public Record ToRecord()
         {
             return new Record(new string[]
@@ -54,10 +66,12 @@ namespace LangaraCPSC.WebAPI
             });
         }
 
-        public ExecImageBase64(string id, string buffer)
+        public ExecImageBase64(long id, string buffer)
         { 
             this.ID = id;
             this.Buffer = buffer;
+
+            this.Path = $"{this.ID}.png";
         }
     }
 
@@ -65,7 +79,7 @@ namespace LangaraCPSC.WebAPI
     {
         protected PostGRESDatabase DatabaseInstance;
 
-        protected Dictionary<string, ExecImageBase64> ExecImageMap;
+        protected Dictionary<long, ExecImageBase64> ExecImageMap;
 
         protected Table ExecImageTable;
 
@@ -76,7 +90,7 @@ namespace LangaraCPSC.WebAPI
             return new Table(tableName, new Field[]
             {
                 new Field("ID", FieldType.VarChar, new Flag[] { Flag.NotNull, Flag.PrimaryKey }, 64),
-                new Field("Path", FieldType.VarChar, new Flag[] { Flag.NotNull, Flag.PrimaryKey }, 512)
+                new Field("Path", FieldType.VarChar, new Flag[] { Flag.NotNull }, 512)
             });
         }
 
@@ -85,13 +99,13 @@ namespace LangaraCPSC.WebAPI
             return this.DatabaseInstance.InsertRecord(execImage.ToRecord(), this.ExecImageTable.Name);
         }
 
-        public bool ExecImageExists(string id)
+        public bool ExecImageExists(long id)
         {
             return (this.DatabaseInstance.FetchQueryData($"SELECT * FROM {this.ExecImageTable.Name} WHERE ID=\'{id}\'",
                 this.ExecImageTable.Name).Length > 0);
         }
 
-        public ExecImageBase64 GetImageByID(string id)
+        public ExecImageBase64 GetImageByID(long id)
         {
             if (this.ExecImageMap.ContainsKey(id))
                 return this.ExecImageMap[id];
@@ -130,7 +144,7 @@ namespace LangaraCPSC.WebAPI
             return true;
         }
 
-        public bool DeleteImage(string id)
+        public bool DeleteImage(long id)
         {
             if (this.ExecImageExists(id))
                 return this.DatabaseInstance.ExecuteQuery($"DELETE FROM {this.ExecImageTable.Name}");
@@ -138,16 +152,28 @@ namespace LangaraCPSC.WebAPI
             return false;
         }
 
+        public void AssertTable()
+        {
+            Console.WriteLine($"{this.ExecImageTable.GetCreateQuery()}");
+            
+            
+            if (!this.DatabaseInstance.TableExists(this.ExecImageTable.Name))
+                this.DatabaseInstance.ExecuteQuery(this.ExecImageTable.GetCreateQuery());
+        }
+
         public ExecImageManager(DatabaseConfiguration configuration, string tableName = "ExecImages",
             string imageDir = "Images")
         {
             this.DatabaseInstance = new PostGRESDatabase(configuration);
 
-            this.ExecImageMap = new Dictionary<string, ExecImageBase64>();
+            this.ExecImageMap = new Dictionary<long, ExecImageBase64>();
             this.ExecImageTable = ExecImageManager.GetTableSchema(tableName);
             this.ImageDir = imageDir;
 
+            this.DatabaseInstance.Connect();
+            this.AssertTable();
+                        
             FileIO.AssertDirectory(this.ImageDir);
         }
     }
-}
+} 

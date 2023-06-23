@@ -38,6 +38,7 @@ namespace LangaraCPSC.WebAPI
             
             Services.ExecManagerInstance = new ExecManager(config = DatabaseConfiguration.LoadFromFile("DatabaseConfig.json"));
             Services.ExecProfileManagerInstance = new ExecProfileManager(config);
+            Services.ExecImageManagerInstance = new ExecImageManager(config);
             Services.APIKeyManagerInstance = new APIKeyManager(new PostGRESDatabase(config));
 
             Services.APIKeyManagerInstance.LoadKeys();
@@ -52,4 +53,4 @@ namespace LangaraCPSC.WebAPI
             app.Run();
         }
      }
-}
+} 

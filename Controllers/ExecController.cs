@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using KeyMan;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Newtonsoft.Json;
 using Npgsql;
 
@@ -201,8 +202,43 @@ namespace LangaraCPSC.WebAPI.Controllers
                 return new HttpObject(HttpReturnType.Success, updatedExecProfile).ToJson();
             });
         }
-        
-        
+
+        [HttpPut("Image/Create")]
+        public async Task<string> CreateImage([FromBody] RequestModel request, [FromHeader] string apikey)
+        {
+            Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request.Request.Substring(2, request.Request.Length - 3)));
+            
+            APIKey key;
+               
+            if ((key = Services.APIKeyManagerInstance.GetAPIKey(apikey)) == null)
+                return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+            if (!key.HasPermission("ExecCreate"))
+                return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+           
+            return await Task.Run(() =>
+            {
+                ExecImageBase64 image = null;
+
+                string imageBuffer;
+                
+                try
+                {
+                    Console.WriteLine((imageBuffer = requestMap["buffer"].ToString() ).Length);
+                    Services.ExecImageManagerInstance.AddExecImage((image = new ExecImageBase64((long)requestMap["id"], (imageBuffer = requestMap["buffer"].ToString()).Substring(2, imageBuffer.Length - 2))));
+                    (image = new ExecImageBase64((long)requestMap["id"],
+                            (imageBuffer = requestMap["buffer"].ToString()).Substring(2, imageBuffer.Length - 2)))
+                        .SaveToFile();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    return new HttpError(HttpErrorType.Unknown, e.Message).ToJson();
+                }
+                
+                return new HttpObject(HttpReturnType.Success, image).ToJson();
+            });
+        }
+
         public ExecController()
         {
         }

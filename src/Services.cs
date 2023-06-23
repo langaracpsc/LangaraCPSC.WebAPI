@@ -9,4 +9,6 @@ public class Services
     public static ExecProfileManager ExecProfileManagerInstance;
     
     public static APIKeyManager APIKeyManagerInstance;
+
+    public static ExecImageManager ExecImageManagerInstance;
 }
