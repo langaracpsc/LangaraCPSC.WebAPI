@@ -181,6 +181,7 @@ namespace LangaraCPSC.WebAPI.Controllers
             APIKey key;
 
             Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
+            
 
             return await Task.Run(() =>
             {
@@ -192,13 +193,13 @@ namespace LangaraCPSC.WebAPI.Controllers
                         return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
 
                     if (key.HasPermission("ExecUpdate"))
-                        updatedExecProfile= Services.ExecProfileManagerInstance.UpdateExecProfile(requestMap);
+                        updatedExecProfile = Services.ExecProfileManagerInstance.UpdateExecProfile(requestMap);
                 }
                 catch (Exception e)
                 {
                     return new HttpError(HttpErrorType.Unknown, e.Message).ToJson();
                 }
-
+ 
                 return new HttpObject(HttpReturnType.Success, updatedExecProfile).ToJson();
             });
         }
@@ -207,7 +208,7 @@ namespace LangaraCPSC.WebAPI.Controllers
         public async Task<string> CreateImage([FromBody] RequestModel request, [FromHeader] string apikey)
         {
             Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request.Request.Substring(2, request.Request.Length - 3)));
-            
+
             APIKey key;
                
             if ((key = Services.APIKeyManagerInstance.GetAPIKey(apikey)) == null)
@@ -223,11 +224,11 @@ namespace LangaraCPSC.WebAPI.Controllers
                 
                 try
                 {
-                    Console.WriteLine((imageBuffer = requestMap["buffer"].ToString() ).Length);
-                    Services.ExecImageManagerInstance.AddExecImage((image = new ExecImageBase64((long)requestMap["id"], (imageBuffer = requestMap["buffer"].ToString()).Substring(2, imageBuffer.Length - 2))));
-                    (image = new ExecImageBase64((long)requestMap["id"],
-                            (imageBuffer = requestMap["buffer"].ToString()).Substring(2, imageBuffer.Length - 2)))
-                        .SaveToFile();
+                    Console.WriteLine((imageBuffer = requestMap["buffer"].ToString()).Length);
+                    Services.ExecImageManagerInstance.AddExecImage((image = new ExecImageBase64((long)requestMap["id"], 
+                        (imageBuffer = requestMap["buffer"].ToString()).Substring(2, imageBuffer.Length - 3))));
+
+                    image.SaveToFile();
                 }
                 catch (Exception e)
                 {
@@ -244,3 +245,6 @@ namespace LangaraCPSC.WebAPI.Controllers
         }
     }
 }  
+
+
+

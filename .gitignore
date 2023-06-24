@@ -3,5 +3,6 @@ obj/
 bin/
 data/
 .logs
+client.py
 DatabaseConfig.json
 
