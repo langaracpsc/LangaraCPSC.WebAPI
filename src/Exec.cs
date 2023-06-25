@@ -1,7 +1,7 @@
 using System.Collections;
+using System.Net.Mail;
 using Newtonsoft.Json;
 using OpenDatabase;
-using OpenDatabase.Json;
 using OpenDatabaseAPI;
 
 namespace LangaraCPSC.WebAPI
@@ -57,8 +57,10 @@ namespace LangaraCPSC.WebAPI
 
         public ExecName Name { get; set; }
 
-        public ExecPosition Position;
-        
+        public ExecPosition Position { get; set; }
+
+        public string Email { get; set; }
+
         public ExecTenure Tenure { get; set; }
 
         public Record ToRecord()
@@ -67,6 +69,7 @@ namespace LangaraCPSC.WebAPI
                 "ID",
                 "FirstName",
                 "LastName",
+                "Email",
                 "Position",
                 "TenureStart",
                 "TenureEnd"
@@ -79,14 +82,15 @@ namespace LangaraCPSC.WebAPI
                 (this.Tenure.End == new DateTime()) ? null : this.Tenure.End.ToString()
             });
         }
-
+        
         public static Exec FromRecord(Record record)
         {
                return new Exec((int)record.Values[0],
                         new ExecName(record.Values[1].ToString(), record.Values[2].ToString()),
-                        (ExecPosition)((int)record.Values[3]),
-                        new ExecTenure(DateTime.Parse(record.Values[4].ToString()), 
-                        ((record.Values[5] == null || record.Values[5] == "")) ? new DateTime() : DateTime.Parse(record.Values[5].ToString())));
+                        record.Values[3].ToString(),
+                        (ExecPosition)((int)record.Values[4]),
+                        new ExecTenure(DateTime.Parse(record.Values[5].ToString()), 
+                        ((record.Values[6] == null || record.Values[7] == "")) ? new DateTime() : DateTime.Parse(record.Values[6].ToString())));
         }
 
         public string ToJson()
@@ -94,15 +98,15 @@ namespace LangaraCPSC.WebAPI
             return JsonConvert.SerializeObject(this);
         }
 
-        public Exec(long id, ExecName name, ExecPosition position, ExecTenure tenure)
+        public Exec(long id, ExecName name, string email, ExecPosition position, ExecTenure tenure)
         {
             this.ID = id;
             this.Name = name;
+            this.Email = email;
             this.Position = position;
             this.Tenure = tenure;
         }
     }
-
 
     public class ExecManager
     {
@@ -118,16 +122,17 @@ namespace LangaraCPSC.WebAPI
             "ID",
             "FirstName",
             "LastName",
+            "Email",
             "Position",
             "TenureStart",
             "TenureEnd" 
         };
         
-        public Exec CreateExec(long studentID, ExecName name, ExecPosition position, ExecTenure tenure)
+        public Exec CreateExec(long studentID, ExecName name, string email, ExecPosition position, ExecTenure tenure)
         {
             Exec exec;
 
-            this.DatabaseConnection.InsertRecord((exec = new Exec(studentID, name, position, tenure)).ToRecord(), this.ExecTableName);
+            this.DatabaseConnection.InsertRecord((exec = new Exec(studentID, name, email, position, tenure)).ToRecord(), this.ExecTableName);
             this.ExecMap.Add(exec.ID, exec);
 
             return exec;

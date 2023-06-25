@@ -58,18 +58,22 @@ namespace LangaraCPSC.WebAPI.Controllers
                 if (key == null)
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
 
-                Console.WriteLine(JsonConvert.SerializeObject(key));  
-                
-                if (key.HasPermission("ExecCreate"))
+                if (!key.HasPermission("ExecCreate"))
+                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+    
+                try
                 {
                     if ((exec = Services.ExecManagerInstance.CreateExec((long)requestMap["studentid"],
                             new ExecName(requestMap["firstname"].ToString(), requestMap["lastname"].ToString()),
+                            requestMap["email"].ToString(),
                             (ExecPosition)(long)requestMap["position"], new ExecTenure(DateTime.Now))) == null)
                         return new HttpError(HttpErrorType.InvalidParamatersError, "Failed to create exec.").ToJson();
                 }
-                else
-                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
-                
+                catch (Exception e)
+                {
+                    return new HttpObject(HttpReturnType.Error, e.Message).ToJson();
+                }  
+
                 return new HttpObject(HttpReturnType.Success, exec.ToJson()).ToJson();
             });
         }
@@ -88,7 +92,8 @@ namespace LangaraCPSC.WebAPI.Controllers
                 if (key == null)
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
 
-                Console.WriteLine(JsonConvert.SerializeObject(key));
+                Console.
+                    WriteLine(JsonConvert.SerializeObject(key));
 
                 try
                 {
