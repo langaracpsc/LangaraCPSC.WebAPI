@@ -207,7 +207,7 @@ namespace LangaraCPSC.WebAPI.Controllers
         [HttpPut("Image/Create")]
         public async Task<string> CreateImage([FromBody] RequestModel request, [FromHeader] string apikey)
         {
-            Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request.Request.Substring(2, request.Request.Length - 3)));
+            Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request.Request));
 
             APIKey key;
                
@@ -219,14 +219,11 @@ namespace LangaraCPSC.WebAPI.Controllers
             return await Task.Run(() =>
             {
                 ExecImageBase64 image = null;
-
-                string imageBuffer;
-                
+            
                 try
                 {
-                    Console.WriteLine((imageBuffer = requestMap["buffer"].ToString()).Length);
-                    Services.ExecImageManagerInstance.AddExecImage((image = new ExecImageBase64((long)requestMap["id"], 
-                        (imageBuffer = requestMap["buffer"].ToString()).Substring(2, imageBuffer.Length - 3))));
+                    Services.ExecImageManagerInstance.AddExecImage(
+                        (image = new ExecImageBase64((long)requestMap["id"], requestMap["buffer"].ToString()))); 
 
                     image.SaveToFile();
                 }
