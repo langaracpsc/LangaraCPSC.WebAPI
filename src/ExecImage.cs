@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
@@ -10,7 +11,6 @@ namespace LangaraCPSC.WebAPI
     public class ExecImageBase64 : IRecord, IPayload
     {
         public long ID;
-
 
         public string Path;
 
@@ -49,7 +49,12 @@ namespace LangaraCPSC.WebAPI
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this);
+            Hashtable imageMap = new Hashtable();
+
+            imageMap.Add("ID", this.ID);
+            imageMap.Add("Buffer", this.Buffer);
+
+            return JsonConvert.SerializeObject(imageMap);
         }
 
         public Record ToRecord()
@@ -117,7 +122,11 @@ namespace LangaraCPSC.WebAPI
             if ((records = this.DatabaseInstance.FetchQueryData(
                     $"SELECT * FROM {this.ExecImageTable.Name} WHERE ID=\'{id}\'", this.ExecImageTable.Name)) == null)
                 return null;
-
+            
+            if ((records = this.DatabaseInstance.FetchQueryData(
+                    $"SELECT * FROM {this.ExecImageTable.Name} WHERE ID=\'{id}\'", this.ExecImageTable.Name)).Length < 1)
+                return null;
+            
             this.ExecImageMap.Add((image = ExecImageBase64.LoadFromFile(records[0].Values[1].ToString())).ID, image);
 
             return image;

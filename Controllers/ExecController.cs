@@ -237,6 +237,27 @@ namespace LangaraCPSC.WebAPI.Controllers
             });
         }
 
+        [HttpGet("Image/{id}")]
+        public async Task<string> GetImage(int id, [FromHeader] string apikey)
+        {
+            APIKey key;
+               
+            if ((key = Services.APIKeyManagerInstance.GetAPIKey(apikey)) == null)
+                return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+            
+            if (!key.HasPermission("ExecRead"))
+                return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson(); 
+            
+            return await Task.Run(() => {
+                ExecImageBase64 image = null;
+                
+                if ((image = Services.ExecImageManagerInstance.GetImageByID(id)) == null)
+                    return new HttpError(HttpErrorType.FileNotFoundError, $"Image with ID \"{id}\" was not found.").ToJson();
+                    
+                return new HttpObject(HttpReturnType.Success, image.ToJson()).ToJson();
+            });
+        }
+
         public ExecController()
         {
         }

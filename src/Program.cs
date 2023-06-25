@@ -47,10 +47,13 @@ namespace LangaraCPSC.WebAPI
             //     .SetKeyValidityTime(new KeyValidityTime(DateTime.Now))
             //     .SetIsLimitless(true)
             //     .AddPermission("ExecCreate", true)
+            //     .AddPermission(
+            // "ExecRead", true)
             //     .AddPermission("ExecDelete", true)
             //     .AddPermission("ExecUpdate", true).GenerateKey());
-
+            //
             app.Run();
         }
-     }
+     } 
+    
 } 
