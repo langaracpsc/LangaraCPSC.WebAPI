@@ -7,7 +7,6 @@ using OpenDatabaseAPI;
 
 namespace LangaraCPSC.WebAPI
 {
-
     public class ExecImageBase64 : IRecord, IPayload
     {
         public long ID;
@@ -63,8 +62,8 @@ namespace LangaraCPSC.WebAPI
             {
                 "ID",
                 "Path"
-
-            }, new object[]
+            }, 
+            new object[]
             {
                 this.ID,
                 this.Path
@@ -123,9 +122,8 @@ namespace LangaraCPSC.WebAPI
                     $"SELECT * FROM {this.ExecImageTable.Name} WHERE ID=\'{id}\'", this.ExecImageTable.Name)) == null)
                 return null;
             
-            if ((records = this.DatabaseInstance.FetchQueryData(
-                    $"SELECT * FROM {this.ExecImageTable.Name} WHERE ID=\'{id}\'", this.ExecImageTable.Name)).Length < 1)
-                return null;
+            if (records.Length < 1)
+                return null; 
             
             this.ExecImageMap.Add((image = ExecImageBase64.LoadFromFile(records[0].Values[1].ToString())).ID, image);
 
@@ -163,15 +161,11 @@ namespace LangaraCPSC.WebAPI
 
         public void AssertTable()
         {
-            Console.WriteLine($"{this.ExecImageTable.GetCreateQuery()}");
-            
-            
             if (!this.DatabaseInstance.TableExists(this.ExecImageTable.Name))
                 this.DatabaseInstance.ExecuteQuery(this.ExecImageTable.GetCreateQuery());
         }
 
-        public ExecImageManager(DatabaseConfiguration configuration, string tableName = "ExecImages",
-            string imageDir = "Images")
+        public ExecImageManager(DatabaseConfiguration configuration, string tableName = "ExecImages", string imageDir = "Images")
         {
             this.DatabaseInstance = new PostGRESDatabase(configuration);
 

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Net;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Newtonsoft.Json;
@@ -56,6 +57,8 @@ namespace LangaraCPSC.WebAPI
 
         public Table ExecProfileTable;
 
+        public string ExecTableName; 
+        
         public bool ProfileExists(long id)
         {
             if (this.ProfileMap.ContainsKey(id))
@@ -109,6 +112,64 @@ namespace LangaraCPSC.WebAPI
             return profile;
         }
 
+        public List<Exec> GetActiveExecs()
+        {
+            List<Exec> activeExecs = null;
+
+            Record[] records = null;
+            
+            if ((records = this.DatabaseInstance.FetchQueryData($"SELECT * FROM {this.ExecProfileTable.Name} WHERE TenureEnd IS NULL", this.ExecProfileTable.Name)) == null)
+                return activeExecs;
+            if (records.Length < 1)
+                return activeExecs;
+
+            for (int x = 0; x < records.Length; x++)
+                activeExecs.Add(Exec.FromRecord(records[x]));
+ 
+            return activeExecs;
+        }
+
+        public List<ExecProfile> GetActiveProfiles()
+        {
+            List<ExecProfile> profiles = new List<ExecProfile>();
+
+            List<Exec> execs = new List<Exec>();
+
+            Record[] records;
+
+            Record temp;
+    
+            Console.WriteLine($"SELECT * FROM {this.ExecTableName} WHERE TenureEnd IS NULL");        
+            
+            if ((records = this.DatabaseInstance.FetchQueryData($"SELECT * FROM {this.ExecTableName} WHERE TenureEnd IS NULL",
+                    this.ExecTableName)) == null)
+                return null;
+            
+            if (records.Length < 1)
+                return null;
+
+            for (int x = 0; x < records.Length; x++)
+            {
+                Console.WriteLine(JsonConvert.SerializeObject(records[0]));
+                execs.Add(Exec.FromRecord(records[0]));
+            }
+
+            for (int x = 0; x < execs.Count; x++)
+            {
+                Console.WriteLine($"SELECT * FROM {this.ExecProfileTable.Name} WHERE ID={execs[x].ID}");
+                if ((records = this.DatabaseInstance.FetchQueryData(
+                        $"SELECT * FROM {this.ExecProfileTable.Name} WHERE ID={execs[x].ID}",
+                        this.ExecProfileTable.Name)) == null)
+                    continue;
+                if (records.Length < 1)
+                    continue;
+            
+                profiles.Add(ExecProfile.FromRecord(records[0]));
+            }
+            
+            return profiles;
+        }
+
         public ExecProfile UpdateExecProfile(Hashtable updateMap)
         {
             string[] keys = new string[updateMap.Keys.Count];
@@ -136,11 +197,12 @@ namespace LangaraCPSC.WebAPI
                 this.DatabaseInstance.ExecuteQuery(this.ExecProfileTable.GetCreateQuery());
         }
 
-        public ExecProfileManager(DatabaseConfiguration configuration, string tableName = "ExecProfiles")
+        public ExecProfileManager(DatabaseConfiguration configuration, string tableName = "ExecProfiles", string execTableName = "Execs")
         {
             this.DatabaseInstance = new PostGRESDatabase(configuration);
             this.ProfileMap = new Dictionary<long, ExecProfile>();
-
+            this.ExecTableName = execTableName; 
+            
             this.DatabaseInstance.Connect();
 
             this.ExecProfileTable = new Table(tableName, new Field[] {

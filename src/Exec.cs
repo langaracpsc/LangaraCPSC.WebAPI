@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics;
 using System.Net.Mail;
 using Newtonsoft.Json;
 using OpenDatabase;
@@ -17,7 +18,8 @@ namespace LangaraCPSC.WebAPI
         TechLead,
         GeneralRep,
         PublicRelations,
-        Finance
+        Finance,
+        Events
     }
 
     /// <summary>
@@ -25,11 +27,13 @@ namespace LangaraCPSC.WebAPI
     /// </summary>
     public struct ExecName
     {
-        public string FirstName;
-        public string LastName;
+        public string FirstName { get; set; }
+
+        public string LastName { get; set; }
 
         public ExecName(string firstName, string lastName)
         {
+
             this.FirstName = firstName;
             this.LastName = lastName;
         }
@@ -37,9 +41,9 @@ namespace LangaraCPSC.WebAPI
 
     public struct ExecTenure
     {
-        public DateTime Start;
+        public DateTime Start { get; set; }
 
-        public DateTime End;
+        public DateTime End { get; set; }
 
         public ExecTenure(DateTime start, DateTime end = new DateTime())
         {
@@ -77,6 +81,7 @@ namespace LangaraCPSC.WebAPI
                 this.ID,
                 this.Name.FirstName,
                 this.Name.LastName,
+                this.Email,
                 (int)this.Position,
                 this.Tenure.Start.ToString(), 
                 (this.Tenure.End == new DateTime()) ? null : this.Tenure.End.ToString()
@@ -85,12 +90,12 @@ namespace LangaraCPSC.WebAPI
         
         public static Exec FromRecord(Record record)
         {
-               return new Exec((int)record.Values[0],
-                        new ExecName(record.Values[1].ToString(), record.Values[2].ToString()),
-                        record.Values[3].ToString(),
-                        (ExecPosition)((int)record.Values[4]),
-                        new ExecTenure(DateTime.Parse(record.Values[5].ToString()), 
-                        ((record.Values[6] == null || record.Values[7] == "")) ? new DateTime() : DateTime.Parse(record.Values[6].ToString())));
+           return new Exec((int)record.Values[0],
+                    new ExecName(record.Values[1].ToString(), record.Values[2].ToString()),
+                    record.Values[3].ToString(),
+                    (ExecPosition)((int)record.Values[4]),
+                    new ExecTenure(DateTime.Parse(record.Values[5].ToString()), 
+                    ((record.Values[6] == null || record.Values[7] == "")) ? new DateTime() : DateTime.Parse(record.Values[6].ToString())));
         }
 
         public string ToJson()
@@ -189,6 +194,7 @@ namespace LangaraCPSC.WebAPI
             return Exec.FromRecord(records[0]);
         }
 
+
         protected static bool IsKeyValid(string key)
         {
             if (Array.BinarySearch(ExecManager.ValidKeys, key) == -1)
@@ -224,9 +230,10 @@ namespace LangaraCPSC.WebAPI
             this.DatabaseConnection.Connect();
 
             this.ExecTable = new Table(this.ExecTableName, new Field[] {
-                new Field("ID", FieldType.Char, new Flag[]{ Flag.PrimaryKey, Flag.NotNull }, 36),
+                new Field("ID", FieldType.Int, new Flag[]{ Flag.PrimaryKey, Flag.NotNull }),
                 new Field("FirstName", FieldType.VarChar, new Flag[] { Flag.NotNull }, 64),
                 new Field("LastName", FieldType.VarChar, new Flag[] {} , 64),
+                new Field("Email", FieldType.VarChar, new Flag[]{ Flag.NotNull }, 64),
                 new Field("Position", FieldType.Int, new Flag[]{ Flag.NotNull }),
                 new Field("TenureStart", FieldType.VarChar, new Flag[] { Flag.NotNull }, 64),
                 new Field("TenureEnd", FieldType.VarChar, new Flag[] { }, 64)
