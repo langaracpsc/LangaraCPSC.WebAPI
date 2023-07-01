@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using KeyMan;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Newtonsoft.Json;
 using Npgsql;
 
@@ -98,10 +99,8 @@ namespace LangaraCPSC.WebAPI.Controllers
                 {
                     if (key.HasPermission("ExecCreate"))
                     {
-                        if ((execProfile = Services.ExecProfileManagerInstance.CreateProfile((long)requestMap["id"],
-                                requestMap["imageid"].ToString(), requestMap["description"].ToString())) == null)
-                            return new HttpError(HttpErrorType.InvalidParamatersError, "Failed to create exec.")
-                                .ToJson();
+                        if ((execProfile = Services.ExecProfileManagerInstance.CreateProfile((long)requestMap["id"],requestMap["imageid"].ToString(), requestMap["description"].ToString())) == null)
+                            return new HttpError(HttpErrorType.InvalidParamatersError, "Failed to create exec.").ToJson();
                     }
                     else
                         return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
@@ -109,6 +108,7 @@ namespace LangaraCPSC.WebAPI.Controllers
                 }
                 catch (Exception e)
                 {
+                    return new HttpError(HttpErrorType.Unknown, e.Message).ToJson();
                 }
 
                 return new HttpObject(HttpReturnType.Success, execProfile.ToJson()).ToJson();
@@ -285,6 +285,5 @@ namespace LangaraCPSC.WebAPI.Controllers
         }
     }
 }  
-
 
 

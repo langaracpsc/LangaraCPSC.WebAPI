@@ -1,7 +1,4 @@
 using System.Collections;
-using System.Net;
-using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Razor.TagHelpers;
 using Newtonsoft.Json;
 using OpenDatabase;
 using OpenDatabaseAPI;
@@ -33,7 +30,7 @@ namespace LangaraCPSC.WebAPI
       
         public static ExecProfile FromRecord(Record record)
         {
-            return new ExecProfile((long)record.Values[0], record.Values[1].ToString(), record.Values[2].ToString());
+            return new ExecProfile((int)record.Values[0], record.Values[1].ToString(), record.Values[2].ToString());
         }
 
         public string ToJson()
@@ -141,22 +138,17 @@ namespace LangaraCPSC.WebAPI
     
             Console.WriteLine($"SELECT * FROM {this.ExecTableName} WHERE TenureEnd IS NULL");        
             
-            if ((records = this.DatabaseInstance.FetchQueryData($"SELECT * FROM {this.ExecTableName} WHERE TenureEnd IS NULL",
-                    this.ExecTableName)) == null)
+            if ((records = this.DatabaseInstance.FetchQueryData($"SELECT * FROM {this.ExecTableName} WHERE TenureEnd IS NULL", this.ExecTableName)) == null)
                 return null;
             
             if (records.Length < 1)
                 return null;
 
             for (int x = 0; x < records.Length; x++)
-            {
-                Console.WriteLine(JsonConvert.SerializeObject(records[0]));
                 execs.Add(Exec.FromRecord(records[0]));
-            }
 
             for (int x = 0; x < execs.Count; x++)
             {
-                Console.WriteLine($"SELECT * FROM {this.ExecProfileTable.Name} WHERE ID={execs[x].ID}");
                 if ((records = this.DatabaseInstance.FetchQueryData(
                         $"SELECT * FROM {this.ExecProfileTable.Name} WHERE ID={execs[x].ID}",
                         this.ExecProfileTable.Name)) == null)
@@ -187,7 +179,7 @@ namespace LangaraCPSC.WebAPI
         {
             if (this.ProfileExists(id))
                 return this.DatabaseInstance.ExecuteQuery($"DELETE FROM {this.ExecProfileTable.Name} WHERE ID=\'{this.ExecProfileTable.Name}\';");
-
+            
             return false;
         }
 
