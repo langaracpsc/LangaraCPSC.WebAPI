@@ -92,9 +92,6 @@ namespace LangaraCPSC.WebAPI.Controllers
 
                 if (key == null)
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
-
-                Console.WriteLine(JsonConvert.SerializeObject(key));
-
                 try
                 {
                     if (key.HasPermission("ExecCreate"))

@@ -115,11 +115,13 @@ namespace LangaraCPSC.WebAPI
 
             Record[] records = null;
             
-            if ((records = this.DatabaseInstance.FetchQueryData($"SELECT * FROM {this.ExecProfileTable.Name} WHERE TenureEnd IS NULL", this.ExecProfileTable.Name)) == null)
+            if ((records = this.DatabaseInstance.FetchQueryData($"SELECT * FROM {this.ExecTableName} WHERE TenureEnd IS NULL", this.ExecTableName)) == null)
                 return activeExecs;
-            if (records.Length < 1)
+            if (records.Length < 1) 
                 return activeExecs;
 
+            activeExecs = new List<Exec>();
+            
             for (int x = 0; x < records.Length; x++)
                 activeExecs.Add(Exec.FromRecord(records[x]));
  
@@ -135,18 +137,10 @@ namespace LangaraCPSC.WebAPI
             Record[] records;
 
             Record temp;
-    
-            Console.WriteLine($"SELECT * FROM {this.ExecTableName} WHERE TenureEnd IS NULL");        
-            
-            if ((records = this.DatabaseInstance.FetchQueryData($"SELECT * FROM {this.ExecTableName} WHERE TenureEnd IS NULL", this.ExecTableName)) == null)
-                return null;
-            
-            if (records.Length < 1)
-                return null;
 
-            for (int x = 0; x < records.Length; x++)
-                execs.Add(Exec.FromRecord(records[0]));
-
+            if ((execs = this.GetActiveExecs()) == null)
+                return null; 
+            
             for (int x = 0; x < execs.Count; x++)
             {
                 if ((records = this.DatabaseInstance.FetchQueryData(
@@ -199,7 +193,7 @@ namespace LangaraCPSC.WebAPI
 
             this.ExecProfileTable = new Table(tableName, new Field[] {
                 new Field("ID", FieldType.Int, new Flag[] { Flag.NotNull, Flag.PrimaryKey }),
-                new Field("ImageID", FieldType.Char, new Flag[] { Flag.NotNull }, 36 ),
+                new Field("ImageID", FieldType.VarChar, new Flag[] { Flag.NotNull }, 36 ),
                 new Field("Description", FieldType.VarChar, new Flag[] { Flag.NotNull }, 10000)
             });
             
