@@ -166,6 +166,7 @@ namespace LangaraCPSC.WebAPI
         public void AssertTable()
         {
             bool b;
+            
             if (!(b = this.DatabaseConnection.TableExists(this.ExecTableName)))
                 this.DatabaseConnection.ExecuteQuery(this.ExecTable.GetCreateQuery());
 

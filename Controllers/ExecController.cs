@@ -16,13 +16,8 @@ namespace LangaraCPSC.WebAPI.Controllers
         [HttpGet("ListAll")]
         public async Task<string> Get([FromHeader] string apikey)
         {
-            APIKey key;
-
-            if ((key = Services.APIKeyManagerInstance.GetAPIKey(apikey)) == null)
-                return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
-
-            if (!key.HasPermission("ExecRead"))
-                return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+            if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecRead" }))
+                return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();  
 
             return await Task.Run(() =>
             {
@@ -36,6 +31,9 @@ namespace LangaraCPSC.WebAPI.Controllers
         {
             return await Task.Run(() =>
             {
+                if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecRead" }))
+                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();  
+                
                 ExecProfile profile = Services.ExecProfileManagerInstance.GetProfileById(id);
 
                 if ((profile = Services.ExecProfileManagerInstance.GetProfileById(id)) == null)
@@ -50,26 +48,12 @@ namespace LangaraCPSC.WebAPI.Controllers
         {
             return await Task.Run(() =>
             {
-                Exec exec;
-                    
-                string str;
-
-                str = Tools.DecodeFromBase64(request);
-
-                //str = Tools.EliminateSubstring(str, "\\");
-
-                Console.WriteLine($"Decoded: {str}");
+                if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecCreate" }))
+                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();  
                 
-                Dictionary<string, object> requestMap = JsonConvert.DeserializeObject<Dictionary<string, object>>(str = Tools.DecodeFromBase64(request));
-
-
-                APIKey key = Services.APIKeyManagerInstance.GetAPIKey(apikey);
-
-                if (key == null)
-                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
-
-                if (!key.HasPermission("ExecCreate"))
-                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+                Exec exec;
+                
+                Dictionary<string, object> requestMap = JsonConvert.DeserializeObject<Dictionary<string, object>>(Tools.DecodeFromBase64(request));
 
                 try
                 {
@@ -93,24 +77,22 @@ namespace LangaraCPSC.WebAPI.Controllers
         {
             return await Task.Run(() =>
             {
+                if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecCreate" }))
+                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();  
+
                 ExecProfile execProfile = null;
 
                 Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
 
-                APIKey key = Services.APIKeyManagerInstance.GetAPIKey(apikey);
-
-                if (key == null)
-                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
                 try
                 {
-                    if (key.HasPermission("ExecCreate"))
+                    if (Services.APIKeyManagerInstance.IsValid(apikey, new string[] { "ExecCreate" }))
                     {
                         if ((execProfile = Services.ExecProfileManagerInstance.CreateProfile((long)requestMap["id"],requestMap["imageid"].ToString(), requestMap["description"].ToString())) == null)
                             return new HttpError(HttpErrorType.InvalidParamatersError, "Failed to create exec.").ToJson();
                     }
                     else
                         return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
-
                 }
                 catch (Exception e)
                 {
@@ -124,13 +106,15 @@ namespace LangaraCPSC.WebAPI.Controllers
         [HttpPost("End")]
         public async Task<string> EndTenure([FromHeader] string request, [FromHeader] string apikey)
         {
-            Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
-
-            long id;
-
             return await Task.Run(() =>
-            {
+            { 
+                long id;
+                
+                if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecEnd" }))
+                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
 
+                Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
+                
                 if (!requestMap.ContainsKey("studentid"))
                     return new HttpError(HttpErrorType.InvalidParamatersError, "Invalid parameters.").ToJson();
 
@@ -138,13 +122,7 @@ namespace LangaraCPSC.WebAPI.Controllers
 
                 try
                 {
-                    if ((key = Services.APIKeyManagerInstance.GetAPIKey(apikey)) == null)
-                        return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
-
-                    if (key.HasPermission("ExecEnd"))
-                        Services.ExecManagerInstance.EndTenure(id = (long)requestMap["studentid"]);
-                    else
-                        return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+                    Services.ExecManagerInstance.EndTenure(id = (long)requestMap["studentid"]);
                 }
                 catch (Exception e)
                 {
@@ -160,19 +138,18 @@ namespace LangaraCPSC.WebAPI.Controllers
         {
             APIKey key;
 
-            Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
-
             return await Task.Run(() =>
             {
+                if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecUpdate" }))
+                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+
                 Exec updatedExec = null;
 
+                Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
+                
                 try
                 {
-                    if ((key = Services.APIKeyManagerInstance.GetAPIKey(apikey)) == null)
-                        return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
-
-                        if (key.HasPermission("ExecUpdate"))
-                            updatedExec = Services.ExecManagerInstance.UpdateExec(requestMap);
+                    updatedExec = Services.ExecManagerInstance.UpdateExec(requestMap);
                 }
                 catch (Exception e)
                 {
@@ -186,21 +163,18 @@ namespace LangaraCPSC.WebAPI.Controllers
         [HttpPost("Profile/Update")]
         public async Task<string> UpdateExecProfile([FromHeader] string request, [FromHeader] string apikey)
         {
-            APIKey key;
-
-            Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
-
             return await Task.Run(() =>
             {
+                if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecUpdate" }))
+                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+
+                Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
+                
                 ExecProfile updatedExecProfile = null;
 
                 try
                 {
-                    if ((key = Services.APIKeyManagerInstance.GetAPIKey(apikey)) == null)
-                        return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
-
-                    if (key.HasPermission("ExecUpdate"))
-                        updatedExecProfile = Services.ExecProfileManagerInstance.UpdateExecProfile(requestMap);
+                    updatedExecProfile = Services.ExecProfileManagerInstance.UpdateExecProfile(requestMap);
                 }
                 catch (Exception e)
                 
@@ -219,10 +193,7 @@ namespace LangaraCPSC.WebAPI.Controllers
 
             return await Task.Run(() =>
             {
-                if ((key = Services.APIKeyManagerInstance.GetAPIKey(apikey)) == null) 
-                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
-                
-                if (!key.HasPermission("ExecRead"))
+                if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecRead" }))
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
 
                 return new HttpObject(HttpReturnType.Success, Services.ExecProfileManagerInstance.GetActiveProfiles()).ToJson();
@@ -232,17 +203,15 @@ namespace LangaraCPSC.WebAPI.Controllers
         [HttpPut("Image/Create")]
         public async Task<string> CreateExecImage([FromBody] RequestModel request, [FromHeader] string apikey)
         {
-            Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request.Request));
-
-            APIKey key;
-               
-            if ((key = Services.APIKeyManagerInstance.GetAPIKey(apikey)) == null)
-                return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
-            if (!key.HasPermission("ExecCreate"))
-                return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
-           
             return await Task.Run(() =>
             {
+                if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecCreate" }))
+                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+                
+                Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request.Request));
+
+                APIKey key;
+           
                 ExecImageBase64 image = null;
             
                 try
@@ -265,13 +234,8 @@ namespace LangaraCPSC.WebAPI.Controllers
         [HttpGet("Image/{id}")]
         public async Task<string> GetExecImage(int id, [FromHeader] string apikey)
         {
-            APIKey key;
-               
-            if ((key = Services.APIKeyManagerInstance.GetAPIKey(apikey)) == null)
+            if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecRead" }))
                 return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
-            
-            if (!key.HasPermission("ExecRead"))
-                return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson(); 
             
             return await Task.Run(() => {
                 ExecImageBase64 image = null;
