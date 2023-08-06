@@ -153,7 +153,8 @@ namespace LangaraCPSC.WebAPI
 
             Exec exec = Exec.FromRecord(records[0]);
 
-            exec.Tenure = new ExecTenure(exec.Tenure.Start, DateTime.Now);
+            if (exec.Tenure.End == new DateTime())
+                exec.Tenure = new ExecTenure(exec.Tenure.Start, DateTime.Now);
             
             this.DatabaseConnection.UpdateRecord(new Record(new string[] { "ID" }, new object[] { id }),
                 exec.ToRecord(), this.ExecTableName);
