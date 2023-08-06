@@ -1,0 +1,58 @@
+[
+	{
+		"studentid": 100399310,
+		"firstname": "Anderson",
+		"lastname": "Tseng",
+		"email": "atseng08@mylangara.ca",
+		"position": 0
+	}, 
+	{
+		"studentid": 100401242,
+		"firstname": "Rishit",
+		"lastname": "Singh",
+		"email": "rsrishitsingh@gmail.com",
+		"position": 2
+	}, 
+	{
+		"studentid": 100401242,
+		"firstname": "Matthew",
+		"lastname": "Widjaja",
+		"email": "mwidjaja03@mylangara.ca",
+		"position": 3
+	}, 
+	{
+		"studentid": 100390120,
+		"firstname": "Van",
+		"lastname": "Valdez",
+		"email": "valdez.vanms@gmail.com",
+		"position": 3
+	}, 
+	{
+		"studentid": 100390120,
+		"firstname": "Van",
+		"lastname": "Valdez",
+		"email": "valdez.vanms@gmail.com",
+		"position": 3
+	}, 
+	{
+		"studentid": 100408400,
+		"firstname": "Mohit",
+		"lastname": "Saxena",
+		"email": "manusaxena1249@gmail.com",
+		"position": 4
+	}, 
+	{
+		"studentid": 100394333,
+		"firstname": "Mark",
+		"lastname": "Danskin",
+		"email": "markdanskin@gmail.com",
+		"position": 5
+	}, 
+	{
+		"studentid": 100402374,
+		"firstname": "Arnold",
+		"lastname": "Desouza",
+		"email": "arnoldkevindesouza@gmail.com",
+		"position": 6
+	} 
+]

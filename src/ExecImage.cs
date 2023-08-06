@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using OpenDatabase;
+using OpenDatabase.Json;
 using OpenDatabaseAPI;
 
 namespace LangaraCPSC.WebAPI
@@ -123,8 +124,10 @@ namespace LangaraCPSC.WebAPI
                 return null;
             
             if (records.Length < 1)
-                return null; 
+                return null;
             
+            Console.WriteLine(JsonConvert.SerializeObject(records));
+           
             this.ExecImageMap.Add((image = ExecImageBase64.LoadFromFile(records[0].Values[1].ToString())).ID, image);
 
             return image;

@@ -45,7 +45,7 @@ namespace LangaraCPSC.WebAPI
 
         public string Message;
 
-        public HttpError(HttpErrorType type, string message) : base(HttpReturnType.Error)
+        public HttpError(HttpErrorType type, string message) : base(HttpReturnType.Error, message)
         {
             this.Type = type;
             this.Message = message;

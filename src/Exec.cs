@@ -38,7 +38,6 @@ namespace LangaraCPSC.WebAPI
             this.LastName = lastName;
         }
     }
-
     public struct ExecTenure
     {
         public DateTime Start { get; set; }
@@ -67,7 +66,7 @@ namespace LangaraCPSC.WebAPI
 
         public ExecTenure Tenure { get; set; }
 
-        public Record ToRecord()
+        public Record ToRecord() 
         {
             return new Record(new string[] {
                 "ID",
@@ -118,7 +117,7 @@ namespace LangaraCPSC.WebAPI
         public PostGRESDatabase DatabaseConnection;
 
         public string ExecTableName;
-
+        
         protected Table ExecTable;
 
         public Dictionary<long, Exec> ExecMap;

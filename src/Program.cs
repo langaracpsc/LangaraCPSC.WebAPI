@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using KeyMan;
+using Npgsql.Replication.PgOutput;
 using OpenDatabase;
 using OpenDatabaseAPI;
 
@@ -19,6 +20,16 @@ namespace LangaraCPSC.WebAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("CORS", policy =>
+                {
+                   policy.AllowAnyOrigin();
+                   policy.AllowAnyHeader();
+                   policy.AllowAnyMethod();
+                });
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -28,12 +39,11 @@ namespace LangaraCPSC.WebAPI
                 app.UseSwaggerUI();
             }
 
+            app.UseCors("CORS");
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
             app.MapControllers();
-
+            
             DatabaseConfiguration config;
             
             Services.ExecManagerInstance = new ExecManager(config = DatabaseConfiguration.LoadFromFile("DatabaseConfig.json"));
@@ -42,7 +52,7 @@ namespace LangaraCPSC.WebAPI
             Services.APIKeyManagerInstance = new APIKeyManager(new PostGRESDatabase(config));
 
             Services.APIKeyManagerInstance.LoadKeys();
-            
+            //
             // Services.APIKeyManagerInstance.AddAPIKey(new APIKeyBuilder().SetUserID("100401242")
             //     .SetKeyValidityTime(new KeyValidityTime(DateTime.Now))
             //     .SetIsLimitless(true)
@@ -50,10 +60,11 @@ namespace LangaraCPSC.WebAPI
             //     .AddPermission(
             // "ExecRead", true)
             //     .AddPermission("ExecDelete", true)
-            //     .AddPermission("ExecUpdate", true).GenerateKey());
-            //
+            //     .AddPermission("ExecUpdate", true)
+            //     .GenerateKey());
+            
             app.Run();
         }
      } 
-    
 } 
+
