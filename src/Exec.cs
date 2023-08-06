@@ -94,7 +94,7 @@ namespace LangaraCPSC.WebAPI
                     record.Values[3].ToString(),
                     (ExecPosition)((int)record.Values[4]),
                     new ExecTenure(DateTime.Parse(record.Values[5].ToString()), 
-                    ((record.Values[6] == null || record.Values[7] == "")) ? new DateTime() : DateTime.Parse(record.Values[6].ToString())));
+                    ((record.Values[6] == null || record.Values[6] == "")) ? new DateTime() : DateTime.Parse(record.Values[6].ToString())));
         }
 
         public string ToJson()
@@ -154,7 +154,7 @@ namespace LangaraCPSC.WebAPI
             Exec exec = Exec.FromRecord(records[0]);
 
             exec.Tenure = new ExecTenure(exec.Tenure.Start, DateTime.Now);
-
+            
             this.DatabaseConnection.UpdateRecord(new Record(new string[] { "ID" }, new object[] { id }),
                 exec.ToRecord(), this.ExecTableName);
         }
