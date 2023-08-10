@@ -28,9 +28,9 @@ namespace LangaraCPSC.WebAPI
 
         public static ExecImageBase64 LoadFromFile(string file)
         {
-            string[] split = null;
+            string[] split = file.Split('/'), split1;
 
-            return new ExecImageBase64(int.Parse((split = file.Split('.'))[0]), FileIO.ReadFromFile(file));
+            return new ExecImageBase64(int.Parse((split1 = split[split.Length - 1].Split('.'))[0]), FileIO.ReadFromFile(file));
         }
 
         public static ExecImageBase64 FromRecord(Record record)
@@ -125,10 +125,10 @@ namespace LangaraCPSC.WebAPI
             
             if (records.Length < 1)
                 return null;
-            
+           
             Console.WriteLine(JsonConvert.SerializeObject(records));
            
-            this.ExecImageMap.Add((image = ExecImageBase64.LoadFromFile(records[0].Values[1].ToString())).ID, image);
+            this.ExecImageMap.Add((image = ExecImageBase64.LoadFromFile($"{this.ImageDir}/{records[0].Values[1].ToString()}")).ID, image);
 
             return image;
         }
@@ -182,4 +182,5 @@ namespace LangaraCPSC.WebAPI
             FileIO.AssertDirectory(this.ImageDir);
         }
     }
+    
 } 

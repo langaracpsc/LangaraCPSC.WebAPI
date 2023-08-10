@@ -60,7 +60,6 @@ namespace LangaraCPSC.WebAPI
         {
             if (this.ProfileMap.ContainsKey(id))
                 return true;
-            
             return (this.DatabaseInstance.FetchQueryData($"SELECT * FROM {this.ExecProfileTable.Name}", this.ExecProfileTable.Name).Length > 0);
         }
 
