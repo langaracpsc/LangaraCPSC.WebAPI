@@ -41,7 +41,7 @@ namespace LangaraCPSC.WebAPI.Controllers
         }
 
         [HttpPost("Create")]
-        public async Task<string> CreateExec([FromHeader] string request, [FromHeader] string apikey)
+        public async Task<string> CreateExec([FromBody] string request, [FromHeader] string apikey)
         {
             return await Task.Run(() =>
             {
@@ -50,7 +50,7 @@ namespace LangaraCPSC.WebAPI.Controllers
                 
                 Exec exec;
                 
-                Dictionary<string, object> requestMap = JsonConvert.DeserializeObject<Dictionary<string, object>>(Tools.DecodeFromBase64(request));
+                Dictionary<string, object> requestMap = JsonConvert.DeserializeObject<Dictionary<string, object>>(request);
 
                 try
                 {
@@ -70,7 +70,7 @@ namespace LangaraCPSC.WebAPI.Controllers
         }
 
         [HttpPost("Profile/Create")]
-        public async Task<string> CreateExecProfile([FromHeader] string request, [FromHeader] string apikey)
+        public async Task<string> CreateExecProfile([FromBody] string request, [FromHeader] string apikey)
         {
             return await Task.Run(() =>
             {
@@ -80,7 +80,7 @@ namespace LangaraCPSC.WebAPI.Controllers
                 ExecProfile execProfile = null;
 
                 
-                Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
+                Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(request);
                 
                 try
                 {
@@ -104,7 +104,7 @@ namespace LangaraCPSC.WebAPI.Controllers
         }
 
         [HttpPost("End")]
-        public async Task<string> EndTenure([FromHeader] string request, [FromHeader] string apikey)
+        public async Task<string> EndTenure([FromBody] string request, [FromHeader] string apikey)
         {
             return await Task.Run(() =>
             { 
@@ -113,7 +113,7 @@ namespace LangaraCPSC.WebAPI.Controllers
                 if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecEnd" }))
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
 
-                Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
+                Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(request);
                 
                 if (!requestMap.ContainsKey("studentid"))
                     return new HttpError(HttpErrorType.InvalidParamatersError, "Invalid parameters.").ToJson();
@@ -145,7 +145,7 @@ namespace LangaraCPSC.WebAPI.Controllers
 
                 Exec updatedExec = null;
 
-                Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
+                Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(request);
                 
                 try
                 {
@@ -168,7 +168,7 @@ namespace LangaraCPSC.WebAPI.Controllers
                 if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecUpdate" }))
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
 
-                Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request));
+                Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(request);
                 
                 ExecProfile updatedExecProfile = null;
 
@@ -199,7 +199,7 @@ namespace LangaraCPSC.WebAPI.Controllers
                 return new HttpObject(HttpReturnType.Success, Services.ExecProfileManagerInstance.GetActiveProfiles()).ToJson();
             });
         }
-
+ 
         [HttpPut("Image/Create")]
         public async Task<string> CreateExecImage([FromBody] RequestModel request, [FromHeader] string apikey)
         {
@@ -208,7 +208,7 @@ namespace LangaraCPSC.WebAPI.Controllers
                 if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecCreate" }))
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
                 
-                Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(Tools.DecodeFromBase64(request.Request));
+                Hashtable requestMap = JsonConvert.DeserializeObject<Hashtable>(request.Request);
 
                 APIKey key;
            
