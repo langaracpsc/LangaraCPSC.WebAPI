@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Net.Mime;
 using Newtonsoft.Json;
 using OpenDatabase;
 using OpenDatabaseAPI;
@@ -123,8 +124,31 @@ namespace LangaraCPSC.WebAPI
             
             for (int x = 0; x < records.Length; x++)
                 activeExecs.Add(Exec.FromRecord(records[x]));
- 
+
             return activeExecs;
+        }
+
+        public ExecImageProfile GetExecImageProfile(string id)
+        {
+            Record[] profileRecords = this.DatabaseInstance.FetchQueryData(
+                        $"SELECT * FROM {this.ExecProfileTable.Name} WHERE ID=\"{id}\"", this.ExecProfileTable.Name),
+                imageRecords = null; 
+                
+            ExecProfile profile = null;
+
+            if (profileRecords.Length < 1)
+                return null;
+            
+            
+            return new ExecImageProfile(profile, null);
+        }
+
+        public List<ExecImageProfile> GetActiveImageProfiles()
+        {
+            List<ExecImageProfile> execImageProfiles = new List<ExecImageProfile>();
+            
+            
+            return execImageProfiles;
         }
 
         public List<ExecProfile> GetActiveProfiles()
@@ -197,6 +221,24 @@ namespace LangaraCPSC.WebAPI
             });
             
             this.AssertTable();
+        }
+    }
+
+    public class ExecImageProfile : IPayload
+    {
+        protected ExecProfile Profile;
+
+        public ExecImageBase64 Image { get; private set; }
+
+        public string ToJson()
+        {
+            return null;
+        }
+
+        public ExecImageProfile(ExecProfile profile, ExecImageBase64 image)
+        {
+            this.Profile = profile;
+            this.Image = image;
         }
     }
 } 

@@ -187,7 +187,7 @@ namespace LangaraCPSC.WebAPI.Controllers
         }
 
         [HttpGet("Profile/Active")]
-        public async Task<string> GetActiveProfiles([FromHeader]string apikey)
+        public async Task<string> GetActiveProfiles([FromHeader]string apikey, [FromQuery] bool embedImage)
         {
             APIKey key = null;
 
