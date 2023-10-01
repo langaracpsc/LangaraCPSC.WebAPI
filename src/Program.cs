@@ -47,8 +47,8 @@ namespace LangaraCPSC.WebAPI
             DatabaseConfiguration config;
             
             Services.ExecManagerInstance = new ExecManager(config = DatabaseConfiguration.LoadFromFile("DatabaseConfig.json"));
-            Services.ExecProfileManagerInstance = new ExecProfileManager(config);
             Services.ExecImageManagerInstance = new ExecImageManager(config);
+            Services.ExecProfileManagerInstance = new ExecProfileManager(config, "ExecProfiles", "Execs", Services.ExecImageManagerInstance);
             Services.APIKeyManagerInstance = new APIKeyManager(new PostGRESDatabase(config));
 
             Services.APIKeyManagerInstance.LoadKeys();

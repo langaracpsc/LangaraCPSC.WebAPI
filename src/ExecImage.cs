@@ -14,7 +14,7 @@ namespace LangaraCPSC.WebAPI
 
         public string Path;
 
-        protected string Buffer;
+        public string Buffer { get; private set; }
 
         public bool SaveToFile(string file)
         {

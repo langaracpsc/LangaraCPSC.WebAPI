@@ -53,6 +53,8 @@ namespace LangaraCPSC.WebAPI
 
         private Dictionary<long, ExecProfile> ProfileMap;
 
+        private ExecImageManager ImageManager;
+        
         public Table ExecProfileTable;
 
         public string ExecTableName; 
@@ -128,28 +130,27 @@ namespace LangaraCPSC.WebAPI
             return activeExecs;
         }
 
-        public ExecImageProfile GetExecImageProfile(string id)
+        public ExecImageProfile GetExecImageProfile(long id)
         {
-            Record[] profileRecords = this.DatabaseInstance.FetchQueryData(
-                        $"SELECT * FROM {this.ExecProfileTable.Name} WHERE ID=\"{id}\"", this.ExecProfileTable.Name),
-                imageRecords = null; 
-                
-            ExecProfile profile = null;
+            ExecProfile profile = this.GetProfileById(id);
 
-            if (profileRecords.Length < 1)
+            if (profile == null)
                 return null;
-            
-            
-            return new ExecImageProfile(profile, null);
+
+            return new ExecImageProfile(profile, this.ImageManager.GetImageByID(id).Buffer);
         }
 
         public List<ExecImageProfile> GetActiveImageProfiles()
         {
             List<ExecImageProfile> execImageProfiles = new List<ExecImageProfile>();
-            
-            
+
+            List<ExecProfile> activeProfiles = this.GetActiveProfiles();
+
+            foreach (ExecProfile profile in activeProfiles)
+                execImageProfiles.Add(new ExecImageProfile(profile, this.ImageManager.GetImageByID(profile.ID).Buffer));
+
             return execImageProfiles;
-        }
+        } 
 
         public List<ExecProfile> GetActiveProfiles()
         {
@@ -206,7 +207,7 @@ namespace LangaraCPSC.WebAPI
                 this.DatabaseInstance.ExecuteQuery(this.ExecProfileTable.GetCreateQuery());
         }
 
-        public ExecProfileManager(DatabaseConfiguration configuration, string tableName = "ExecProfiles", string execTableName = "Execs")
+        public ExecProfileManager(DatabaseConfiguration configuration, string tableName = "ExecProfiles", string execTableName = "Execs", ExecImageManager imageManager = null)
         {
             this.DatabaseInstance = new PostGRESDatabase(configuration);
             this.ProfileMap = new Dictionary<long, ExecProfile>();
@@ -219,6 +220,8 @@ namespace LangaraCPSC.WebAPI
                 new Field("ImageID", FieldType.VarChar, new Flag[] { Flag.NotNull }, 36 ),
                 new Field("Description", FieldType.VarChar, new Flag[] { Flag.NotNull }, 10000)
             });
+
+            this.ImageManager = imageManager;
             
             this.AssertTable();
         }
@@ -228,14 +231,14 @@ namespace LangaraCPSC.WebAPI
     {
         protected ExecProfile Profile;
 
-        public ExecImageBase64 Image { get; private set; }
+        public string Image { get; private set; }
 
         public string ToJson()
         {
-            return null;
+            return JsonConvert.SerializeObject(this);
         }
 
-        public ExecImageProfile(ExecProfile profile, ExecImageBase64 image)
+        public ExecImageProfile(ExecProfile profile, string image)
         {
             this.Profile = profile;
             this.Image = image;
