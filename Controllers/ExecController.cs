@@ -19,8 +19,7 @@ namespace LangaraCPSC.WebAPI.Controllers
 
             return await Task.Run(() =>
             {
-                return new HttpObject(HttpReturnType.Success,
-                    JsonConvert.SerializeObject(Services.ExecManagerInstance.GetExecs())).ToJson();
+                return new HttpObject(HttpReturnType.Success,  Services.ExecManagerInstance.GetExecs()).ToJson();
             });
         }
 
@@ -64,7 +63,7 @@ namespace LangaraCPSC.WebAPI.Controllers
                     return new HttpError(HttpErrorType.Unknown, e.Message).ToJson();
                 }
 
-                return new HttpObject(HttpReturnType.Success, exec.ToJson()).ToJson();
+                return new HttpObject(HttpReturnType.Success, exec).ToJson();
             });
         }
 
@@ -95,7 +94,7 @@ namespace LangaraCPSC.WebAPI.Controllers
                     return new HttpError(HttpErrorType.Unknown, e.Message).ToJson();
                 }
 
-                return new HttpObject(HttpReturnType.Success, execProfile.ToJson()).ToJson();
+                return new HttpObject(HttpReturnType.Success, execProfile).ToJson();
             });
         }
 
@@ -233,7 +232,7 @@ namespace LangaraCPSC.WebAPI.Controllers
                 if ((image = Services.ExecImageManagerInstance.GetImageByID(id)) == null)
                     return new HttpError(HttpErrorType.FileNotFoundError, $"Image with ID \"{id}\" was not found.").ToJson();
                     
-                return new HttpObject(HttpReturnType.Success, image.ToJson()).ToJson();
+                return new HttpObject(HttpReturnType.Success, image).ToJson();
             });
         }
 
