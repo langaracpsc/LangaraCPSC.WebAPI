@@ -79,8 +79,6 @@ namespace LangaraCPSC.WebAPI.Controllers
                 
                 try
                 {
-                    Console.WriteLine(JsonConvert.SerializeObject(request));
-                    
                     if (Services.APIKeyManagerInstance.IsValid(apikey, new string[] { "ExecCreate" }))
                     {
                         if ((execProfile = Services.ExecProfileManagerInstance.CreateProfile((long)request["studentid"],request["imageid"].ToString(), request["description"].ToString())) == null)
