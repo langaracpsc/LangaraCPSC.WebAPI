@@ -39,6 +39,30 @@ namespace LangaraCPSC.WebAPI
             return JsonConvert.SerializeObject(this);
         }
 
+        public Hashtable ToMap()
+        {
+            Hashtable map = new Hashtable(); 
+
+            map.Add("ID", this.ID);
+            map.Add("ImageID", this.ImageID);
+            map.Add("Description", this.Description);
+
+            return map;
+        }
+
+        public Hashtable GetComplete(ExecManager manager)
+        {
+            Hashtable completeMap = this.ToMap(); 
+            
+            Exec exec = manager.GetExec(this.ID);
+    
+            completeMap.Add("Name", exec.Name);
+            completeMap.Add("Email", exec.Email);
+            completeMap.Add("Position", exec.Position);
+                
+            return completeMap;
+        }
+
         public ExecProfile(long id, string imageID, string description)
         {
             this.ID = id;
@@ -150,7 +174,7 @@ namespace LangaraCPSC.WebAPI
                 execImageProfiles.Add(new ExecImageProfile(profile, this.ImageManager.GetImageByID(profile.ID).Buffer));
 
             return execImageProfiles;
-        } 
+        }
 
         public List<ExecProfile> GetActiveProfiles()
         {
@@ -171,9 +195,10 @@ namespace LangaraCPSC.WebAPI
                         $"SELECT * FROM {this.ExecProfileTable.Name} WHERE ID={execs[x].ID}",
                         this.ExecProfileTable.Name)) == null)
                     continue;
+                
                 if (records.Length < 1)
                     continue;
-            
+        
                 profiles.Add(ExecProfile.FromRecord(records[0]));
             }
             

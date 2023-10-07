@@ -175,7 +175,7 @@ namespace LangaraCPSC.WebAPI.Controllers
         }
 
         [HttpGet("Profile/Active")]
-        public async Task<string> GetActiveProfiles([FromHeader]string apikey, [FromQuery] bool image)
+        public async Task<string> GetActiveProfiles([FromHeader]string apikey, [FromQuery] bool complete = true, [FromQuery] bool image = true)
         {
             APIKey key = null;
 
@@ -183,6 +183,7 @@ namespace LangaraCPSC.WebAPI.Controllers
             {
                 if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecRead" }))
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+
 
                 return new HttpObject(HttpReturnType.Success, 
                             (image) ? Services.ExecProfileManagerInstance.GetActiveImageProfiles() 

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using Newtonsoft.Json;
 using OpenDatabase;
 using OpenDatabase.Json;
@@ -37,6 +38,9 @@ namespace LangaraCPSC.WebAPI
         {
             try
             {
+                if (record.Values.Length < 2 || (record.Values[1]) == null)
+                    throw new Exception("Failed to fetch image path.");
+                    
                 return ExecImageBase64.LoadFromFile(record.Values[1].ToString());
             }
             catch (Exception e)
