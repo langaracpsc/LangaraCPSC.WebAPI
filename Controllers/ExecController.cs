@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.Json;
 using KeyMan;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -76,14 +77,14 @@ namespace LangaraCPSC.WebAPI.Controllers
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();  
 
                 ExecProfile execProfile = null;
+               
+                Console.WriteLine(JsonConvert.SerializeObject(request));
                 
                 try
                 {
                     if (Services.APIKeyManagerInstance.IsValid(apikey, new string[] { "ExecCreate" }))
-                    {
-                        if ((execProfile = Services.ExecProfileManagerInstance.CreateProfile((long)request["studentid"],request["imageid"].ToString(), request["description"].ToString())) == null)
+                        if ((execProfile = Services.ExecProfileManagerInstance.CreateProfile(((JsonElement)request["studentid"]).GetInt64(),request["imageid"].ToString(), request["description"].ToString())) == null)
                             return new HttpError(HttpErrorType.InvalidParamatersError, "Failed to create exec.").ToJson();
-                    }
                     else
                         return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
                 }
@@ -207,7 +208,7 @@ namespace LangaraCPSC.WebAPI.Controllers
                         (image = new ExecImageBase64((long)request["id"], request["buffer"].ToString()))); 
 
                     image.SaveToFile($"{Services.ExecImageManagerInstance.ImageDir}/{image.Path}");
-                }
+                } 
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
