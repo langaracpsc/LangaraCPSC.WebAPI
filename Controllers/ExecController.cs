@@ -175,7 +175,7 @@ namespace LangaraCPSC.WebAPI.Controllers
         }
 
         [HttpGet("Profile/Active")]
-        public async Task<string> GetActiveProfiles([FromHeader]string apikey, [FromQuery] bool complete = true, [FromQuery] bool image = true)
+        public async Task<string> GetActiveProfiles([FromHeader]string apikey, [FromQuery] bool complete = false, [FromQuery] bool image = false)
         {
             APIKey key = null;
 
@@ -206,7 +206,6 @@ namespace LangaraCPSC.WebAPI.Controllers
                     return new HttpObject(HttpReturnType.Success, completeProfileMaps).ToJson();
                 }
                 
-                
                 return new HttpObject(HttpReturnType.Success, 
                             (image) ? Services.ExecProfileManagerInstance.GetActiveImageProfiles() 
                                 : Services.ExecProfileManagerInstance.GetActiveProfiles()).ToJson();
@@ -228,7 +227,8 @@ namespace LangaraCPSC.WebAPI.Controllers
                 try
                 {
                     Services.ExecImageManagerInstance.AddExecImage(
-                        (image = new ExecImageBase64((long)request["id"], request["buffer"].ToString()))); 
+                        (image = new ExecImageBase64((long)request["id"], request["buffer"].ToString()))
+                        ); 
 
                     image.SaveToFile($"{Services.ExecImageManagerInstance.ImageDir}/{image.Path}");
                 } 
