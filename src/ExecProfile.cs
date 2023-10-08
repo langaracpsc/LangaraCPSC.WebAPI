@@ -50,7 +50,7 @@ namespace LangaraCPSC.WebAPI
             return map;
         }
 
-        public Hashtable GetComplete(ExecManager manager)
+        public virtual Hashtable GetComplete(ExecManager manager)
         {
             Hashtable completeMap = this.ToMap(); 
             
@@ -252,20 +252,31 @@ namespace LangaraCPSC.WebAPI
         }
     }
 
-    public class ExecImageProfile : IPayload
+    public class ExecImageProfile : ExecProfile, IPayload
     {
-        protected ExecProfile Profile;
-
         public string Image { get; private set; }
-
+       
         public string ToJson()
         {
             return JsonConvert.SerializeObject(this);
         }
 
-        public ExecImageProfile(ExecProfile profile, string image)
+        public override Hashtable GetComplete(ExecManager manager)
         {
-            this.Profile = profile;
+            Hashtable completeMap = base.ToMap();
+ 
+            completeMap.Add("Image", this.Image);
+
+            return completeMap;
+        }
+
+        public ExecImageProfile(ExecProfile profile, string image) : base(profile.ID, profile.ImageID, profile.Description)
+        {
+            this.Image = image;
+        }
+
+        public ExecImageProfile(long id, string imageID, string description, string image) : base(id, imageID, description)
+        {
             this.Image = image;
         }
     }
