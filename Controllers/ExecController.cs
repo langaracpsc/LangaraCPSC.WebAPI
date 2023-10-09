@@ -81,7 +81,8 @@ namespace LangaraCPSC.WebAPI.Controllers
                 try
                 {
                     if ((execProfile = Services.ExecProfileManagerInstance.CreateProfile(((JsonElement)request["studentid"]).GetInt64(),request["imageid"].ToString(), request["description"].ToString())) == null) 
-                        return new HttpError(HttpErrorType.InvalidParamatersError, "Failed to create exec.").ToJson();
+                        return new HttpError(HttpErrorType.InvalidParamatersError, "Failed to create exec profile.").ToJson();
+        
                 }
                 catch (Exception e)
                 {
@@ -238,9 +239,15 @@ namespace LangaraCPSC.WebAPI.Controllers
         [HttpGet("Image/{id}")]
         public async Task<string> GetExecImage([FromRoute] int id, [FromHeader] string apikey)
         {
-            if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecRead" }))
-                return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
-            
+            Console.WriteLine($"Tried fetching image {id}");
+
+            if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[] { "ExecRead" }))
+            {
+                Console.WriteLine($"Invalid key provided");
+                
+                return new HttpError(HttpErrorType.Forbidden, "403: Forbidden").ToJson();
+            }
+           
             return await Task.Run(() => {
                 ExecImageBase64 image = null;
                 
@@ -249,7 +256,7 @@ namespace LangaraCPSC.WebAPI.Controllers
                     
                 return new HttpObject(HttpReturnType.Success, image).ToJson();
             });
-        }
+        } 
 
         public ExecController()
         {

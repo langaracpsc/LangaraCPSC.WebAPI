@@ -62,7 +62,15 @@ namespace LangaraCPSC.WebAPI
             //     .AddPermission("ExecUpdate", true)
             //     .AddPermission("ExecEnd", true)
             //     .GenerateKey());
-
+            //
+            // Services.APIKeyManagerInstance.AddAPIKey(new APIKeyBuilder().SetUserID("100401242")
+            //     .SetKeyValidityTime(new KeyValidityTime(DateTime.Now))
+            //     .SetIsLimitless(true)
+            //     .AddPermission("ExecCreate", true)
+            //     .AddPermission("ExecRead", true)
+            //     .AddPermission("ExecUpdate", true)
+            //     .GenerateKey());
+            //
             app.Run();
         }
      } 

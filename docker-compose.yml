@@ -31,7 +31,3 @@ services:
       - langaracpsc-dev  
   
 
-volumes:
-  db_volume:
-         
-    
