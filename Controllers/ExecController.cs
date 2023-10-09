@@ -80,11 +80,8 @@ namespace LangaraCPSC.WebAPI.Controllers
                 
                 try
                 {
-                    if (Services.APIKeyManagerInstance.IsValid(apikey, new string[] { "ExecCreate" }))
-                        if ((execProfile = Services.ExecProfileManagerInstance.CreateProfile(((JsonElement)request["studentid"]).GetInt64(),request["imageid"].ToString(), request["description"].ToString())) == null)
-                            return new HttpError(HttpErrorType.InvalidParamatersError, "Failed to create exec.").ToJson();
-                    else
-                        return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+                    if ((execProfile = Services.ExecProfileManagerInstance.CreateProfile(((JsonElement)request["studentid"]).GetInt64(),request["imageid"].ToString(), request["description"].ToString())) == null) 
+                        return new HttpError(HttpErrorType.InvalidParamatersError, "Failed to create exec.").ToJson();
                 }
                 catch (Exception e)
                 {
@@ -112,7 +109,7 @@ namespace LangaraCPSC.WebAPI.Controllers
 
                 try
                 {
-                    Services.ExecManagerInstance.EndTenure(id = (long)request["studentid"]);
+                    Services.ExecManagerInstance.EndTenure(id = ((JsonElement)request["studentid"]).GetInt64());
                 }
                 catch (Exception e)
                 {

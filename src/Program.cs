@@ -62,7 +62,7 @@ namespace LangaraCPSC.WebAPI
             //     .AddPermission("ExecUpdate", true)
             //     .AddPermission("ExecEnd", true)
             //     .GenerateKey());
-            
+
             app.Run();
         }
      } 
