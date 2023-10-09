@@ -77,8 +77,6 @@ namespace LangaraCPSC.WebAPI.Controllers
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();  
 
                 ExecProfile execProfile = null;
-               
-                Console.WriteLine(JsonConvert.SerializeObject(request));
                 
                 try
                 {
@@ -219,15 +217,13 @@ namespace LangaraCPSC.WebAPI.Controllers
             {
                 if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecCreate" }))
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
-
-                APIKey key;
            
                 ExecImageBase64 image = null;
-            
+
                 try
                 {
                     Services.ExecImageManagerInstance.AddExecImage(
-                        (image = new ExecImageBase64((long)request["id"], request["buffer"].ToString()))
+                        (image = new ExecImageBase64(((JsonElement)request["id"]).GetInt64(), request["buffer"].ToString()))
                         ); 
 
                     image.SaveToFile($"{Services.ExecImageManagerInstance.ImageDir}/{image.Path}");
