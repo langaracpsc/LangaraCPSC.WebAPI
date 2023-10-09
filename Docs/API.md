@@ -63,13 +63,14 @@ Body {
 Permissions: ExecEnd
 </pre>
 
-*  /Exec/Profile/Active?image
+*  /Exec/Profile/Active?image=false&complete=false
 <pre>
 Returns the profiles of all the active execs.
 
 Method: GET
 Query Params: {
-    image: bool
+    image: bool,
+    complete: bool
 }
 Headers: {
     Content-Type: application/json
