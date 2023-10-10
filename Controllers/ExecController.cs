@@ -53,7 +53,7 @@ namespace LangaraCPSC.WebAPI.Controllers
 
                 try
                 {
-                    if ((exec = Services.ExecManagerInstance.CreateExec((long)request["studentid"],
+                    if ((exec = Services.ExecManagerInstance.CreateExec(((JsonElement)request["studentid"]).GetInt64(), 
                             new ExecName(request["firstname"].ToString(), request["lastname"].ToString()),
                             request["email"].ToString(),
                             (ExecPosition)(long)request["position"], new ExecTenure(DateTime.Now))) == null)
