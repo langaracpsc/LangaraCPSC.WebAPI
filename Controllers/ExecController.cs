@@ -56,7 +56,7 @@ namespace LangaraCPSC.WebAPI.Controllers
                     if ((exec = Services.ExecManagerInstance.CreateExec(((JsonElement)request["studentid"]).GetInt64(), 
                             new ExecName(request["firstname"].ToString(), request["lastname"].ToString()),
                             request["email"].ToString(),
-                            (ExecPosition)(long)request["position"], new ExecTenure(DateTime.Now))) == null)
+                            (ExecPosition)((JsonElement)request["position"]).GetInt64(), new ExecTenure(DateTime.Now))) == null)
                         return new HttpError(HttpErrorType.InvalidParamatersError, "Failed to create exec.").ToJson();
                 }
                 catch (Exception e)
