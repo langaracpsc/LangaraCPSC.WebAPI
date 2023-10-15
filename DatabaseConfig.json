@@ -1,6 +1,6 @@
 {
     "_comment": "DO NOT USE THIS FILE IN PRODUCTION; THIS IS A TEMPORARY FILE FOR DEVELOPMENT PURPOSES",
-    "HostName": "12345678",
+    "HostName": "1234567",
     "DatabaseName": "postgres",
     "UserID": "postgres",
     "Password": "password",
