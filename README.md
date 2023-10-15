@@ -9,12 +9,16 @@ Web API for langaracpsc-next
 
 ### Cloning
 ```bash
-git clone --recursive https://github.com/langaracpsc/LangaraCPSC.WebAPI.git
+git clone https://github.com/langaracpsc/LangaraCPSC.WebAPI.git
 ```
 
 ### Building
 ```bash
 cd LangaraCPSC.WebAPI;
+
+git submodule update --init --remote opendatabaseapi;
+git submodule update --init --remote KeyMan;
+
 mkdir data && mkdir data/db;
 docker compose -f ./docker-compose.yml up -d; 
 ```
