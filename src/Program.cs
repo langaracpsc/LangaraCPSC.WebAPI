@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Runtime.CompilerServices;
 using KeyMan;
+using Newtonsoft.Json;
 using Npgsql.Replication.PgOutput;
 using OpenDatabase;
 using OpenDatabaseAPI;
@@ -24,9 +26,9 @@ namespace LangaraCPSC.WebAPI
             {
                 options.AddPolicy("CORS", policy =>
                 {
-                   policy.AllowAnyOrigin();
-                   policy.AllowAnyHeader();
-                   policy.AllowAnyMethod();
+                    policy.AllowAnyOrigin();
+                    policy.AllowAnyHeader();
+                    policy.AllowAnyMethod();
                 });
             });
 
@@ -43,10 +45,37 @@ namespace LangaraCPSC.WebAPI
             app.UseHttpsRedirection();
             app.UseAuthorization();
             app.MapControllers();
-            
-            DatabaseConfiguration config;
-            
-            Services.ExecManagerInstance = new ExecManager(config = DatabaseConfiguration.LoadFromFile("DatabaseConfig.json"));
+
+            IDictionary environmentVariables = Environment.GetEnvironmentVariables();
+
+            DatabaseConfiguration config = null;
+
+            string[] configKeys = new string[] {
+                "HOSTNAME", "DATABASE", "USERNAME", "PASSWORD", "PORT"
+            };
+    
+            foreach (string key in configKeys)
+            {
+                try
+                {
+                    environmentVariables[key].ToString();
+                }
+                catch (NullReferenceException e)
+                {
+                    Console.Error.WriteLine($"Required environment variable {key} is not set.");
+
+                    return;
+                } 
+            }
+
+            config = new DatabaseConfiguration(environmentVariables["HOSTNAME"].ToString(),
+                environmentVariables["DATABASE"].ToString(),
+                environmentVariables["USERNAME"].ToString(),
+                environmentVariables["PASSWORD"].ToString(),
+                SQLClientType.PostGRES,
+                Convert.ToInt32(environmentVariables["PORT"]));
+
+            Services.ExecManagerInstance = new ExecManager(config);
             Services.ExecImageManagerInstance = new ExecImageManager(config);
             Services.ExecProfileManagerInstance = new ExecProfileManager(config, "ExecProfiles", "Execs", Services.ExecImageManagerInstance);
             Services.APIKeyManagerInstance = new APIKeyManager(new PostGRESDatabase(config));
