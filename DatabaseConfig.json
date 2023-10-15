@@ -1,6 +1,6 @@
 {
     "_comment": "DO NOT USE THIS FILE IN PRODUCTION; THIS IS A TEMPORARY FILE FOR DEVELOPMENT PURPOSES",
-    "HostName": "1234567",
+    "HostName": "webapi_postgres",
     "DatabaseName": "postgres",
     "UserID": "postgres",
     "Password": "password",
