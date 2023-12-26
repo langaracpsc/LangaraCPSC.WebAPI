@@ -180,27 +180,29 @@ namespace LangaraCPSC.WebAPI.Controllers
                 if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecRead" }))
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
 
-                if (complete)
-                { 
-                    List<Hashtable> completeProfileMaps = new List<Hashtable>();
-
-                    if (image)
-                    {
-                        List<ExecImageProfile> execProfiles = Services.ExecProfileManagerInstance.GetActiveImageProfiles();
-                        
-                        foreach (ExecImageProfile profile in execProfiles)
-                            completeProfileMaps.Add(profile.GetComplete(Services.ExecManagerInstance));
-                    }
-                    else
-                    {   
-                        List<ExecProfile> execProfiles = Services.ExecProfileManagerInstance.GetActiveProfiles();
-
-                        foreach (ExecProfile profile in execProfiles)
-                            completeProfileMaps.Add(profile.GetComplete(Services.ExecManagerInstance));
-                    } 
+                List<Hashtable> completeProfileMaps = new List<Hashtable>();
+                
+                if (complete && image)
+                {
+                    List<ExecImageProfile> execProfiles = Services.ExecProfileManagerInstance.GetActiveImageProfiles();
+                    
+                    foreach (ExecImageProfile profile in execProfiles)
+                        completeProfileMaps.Add(profile.GetComplete(Services.ExecManagerInstance));
                     
                     return new HttpObject(HttpReturnType.Success, completeProfileMaps).ToJson();
                 }
+                
+                if (complete)
+                { 
+
+                    List<ExecProfile> execProfiles = Services.ExecProfileManagerInstance.GetActiveProfiles();
+
+                    foreach (ExecProfile profile in execProfiles)
+                        completeProfileMaps.Add(profile.GetComplete(Services.ExecManagerInstance));
+                    
+                    return new HttpObject(HttpReturnType.Success, completeProfileMaps).ToJson();
+                }
+                
                 
                 return new HttpObject(HttpReturnType.Success, 
                             (image) ? Services.ExecProfileManagerInstance.GetActiveImageProfiles() 

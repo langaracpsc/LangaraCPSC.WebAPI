@@ -7,7 +7,6 @@ using OpenDatabaseAPI;
 
 namespace LangaraCPSC.WebAPI
 {
-
     /// <summary>
     /// Exec position enum
     /// </summary>
@@ -16,6 +15,7 @@ namespace LangaraCPSC.WebAPI
         President,
         VicePresident,
         TechLead,
+        AsstTechLead,
         GeneralRep,
         PublicRelations,
         Finance,
@@ -33,11 +33,11 @@ namespace LangaraCPSC.WebAPI
 
         public ExecName(string firstName, string lastName)
         {
-
             this.FirstName = firstName;
             this.LastName = lastName;
         }
     }
+    
     public struct ExecTenure
     {
         public DateTime Start { get; set; }

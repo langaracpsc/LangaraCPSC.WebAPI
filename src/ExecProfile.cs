@@ -263,7 +263,7 @@ namespace LangaraCPSC.WebAPI
 
         public override Hashtable GetComplete(ExecManager manager)
         {
-            Hashtable completeMap = base.ToMap();
+            Hashtable completeMap = base.GetComplete(manager);
  
             completeMap.Add("Image", this.Image);
 
