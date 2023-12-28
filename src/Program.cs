@@ -1,8 +1,5 @@
 using System.Collections;
-using System.Runtime.CompilerServices;
 using KeyMan;
-using Newtonsoft.Json;
-using Npgsql.Replication.PgOutput;
 using OpenDatabase;
 using OpenDatabaseAPI;
 
@@ -15,7 +12,6 @@ namespace LangaraCPSC.WebAPI
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
             builder.Services.AddControllers();
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -53,12 +49,12 @@ namespace LangaraCPSC.WebAPI
             string[] configKeys = new string[] {
                 "HOSTNAME", "DATABASE", "USERNAME", "PASSWORD", "PORT"
             };
-    
+
             foreach (string key in configKeys)
             {
                 try
                 {
-                    environmentVariables[key].ToString();
+                    environmentVariables[key]?.ToString();
                 }
                 catch (NullReferenceException e)
                 {
@@ -67,14 +63,14 @@ namespace LangaraCPSC.WebAPI
                     return;
                 } 
             }
-
+            
             config = new DatabaseConfiguration(environmentVariables["HOSTNAME"].ToString(),
                 environmentVariables["DATABASE"].ToString(),
                 environmentVariables["USERNAME"].ToString(),
                 environmentVariables["PASSWORD"].ToString(),
                 SQLClientType.PostGRES,
                 Convert.ToInt32(environmentVariables["PORT"]));
-
+            
             Services.ExecManagerInstance = new ExecManager(config);
             Services.ExecImageManagerInstance = new ExecImageManager(config);
             Services.ExecProfileManagerInstance = new ExecProfileManager(config, "ExecProfiles", "Execs", Services.ExecImageManagerInstance);
