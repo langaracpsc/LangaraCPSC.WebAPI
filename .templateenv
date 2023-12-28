@@ -1,0 +1,8 @@
+# Postgres Credentials
+PG_HOSTNAME="postgres_image"
+PG_DATABASE="postgres"
+PG_USERNAME="postgres"
+PG_PASSWORD="password"
+PG_PORT="5432"
+
+

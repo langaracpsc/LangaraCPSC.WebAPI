@@ -29,5 +29,11 @@ services:
       - "8000:80"     
     networks:
       - langaracpsc-dev  
+    environment:
+      - HOSTNAME=${PG_HOSTNAME}
+      - DATABASE=${PG_DATABASE}
+      - USERNAME=${PG_USERNAME}
+      - PASSWORD=${PG_PASSWORD}
+      - PORT=${PG_PORT}
   
 
