@@ -7,3 +7,4 @@ Scripts/Images
 client.py
 DatabaseConfig.json
 **/package.json
+**/.env

@@ -8,6 +8,8 @@ RUN git submodule update --init KeyMan
 RUN git submodule update --init opendatabaseapi
 RUN rm -rf /KeyMan/OpenDatabaseAPI
 
+RUN mkdir /app
+COPY Images/ /app/Images
 RUN dotnet publish -c release -o /app
 
 
