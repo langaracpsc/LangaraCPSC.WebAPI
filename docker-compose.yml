@@ -26,7 +26,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8000:80"     
+      - "8000:8080"     
     networks:
       - langaracpsc-dev  
     environment:
@@ -35,5 +35,6 @@ services:
       - USERNAME=${PG_USERNAME}
       - PASSWORD=${PG_PASSWORD}
       - PORT=${PG_PORT}
-  
+      - CALENDAR_KEYFILE=keyfile.json
+      - CALENDAR_ID=${CALENDAR_ID}  
 

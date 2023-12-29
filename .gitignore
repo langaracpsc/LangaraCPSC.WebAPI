@@ -8,3 +8,4 @@ client.py
 DatabaseConfig.json
 **/package.json
 **/.env
+**/keyfile.json
