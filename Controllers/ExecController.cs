@@ -161,7 +161,6 @@ namespace LangaraCPSC.WebAPI.Controllers
                     updatedExecProfile = Services.ExecProfileManagerInstance.UpdateExecProfile(request);
                 }
                 catch (Exception e)
-                
                 {
                     return new HttpError(HttpErrorType.Unknown, e.Message).ToJson();
                 }

@@ -11,4 +11,6 @@ public class Services
     public static APIKeyManager APIKeyManagerInstance;
 
     public static ExecImageManager ExecImageManagerInstance;
+
+    public static EventManager EventManagerInstance;
 }
