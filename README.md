@@ -12,13 +12,19 @@ Web API for langaracpsc-next
 git clone https://github.com/langaracpsc/LangaraCPSC.WebAPI.git
 ```
 
-### Building
+### Configuring
 ```bash
 cd LangaraCPSC.WebAPI;
 
 git submodule update --init --remote opendatabaseapi;
 git submodule update --init --remote KeyMan;
+```
 
+Put the Google service account credentials in `keyfile.json`. The original credentials file can be downloaded from Google cloud console.
+
+Set `CALENDAR_ID` variable in `.env` to the ID of the calendar to fetch from. 
+
+```bash
 mkdir data && mkdir data/db;
 docker compose -f ./docker-compose.yml up -d; 
 ```
