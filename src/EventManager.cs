@@ -1,10 +1,6 @@
-using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
-using Google.Apis.Drive.v3.Data;
 using Google.Apis.Calendar.v3;
-using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
 
 namespace LangaraCPSC.WebAPI
@@ -22,6 +18,8 @@ namespace LangaraCPSC.WebAPI
         public string Location;
 
         public string? Image { get; set; }
+
+        public string Link { get; set; }
     }
 
     public class EventManager
@@ -30,26 +28,22 @@ namespace LangaraCPSC.WebAPI
 
         private readonly CalendarService _CalendarService;
 
-        private readonly DriveService _DriveService;
+        p
+            rivate readonly DriveService _DriveService;
 
         private readonly string CalendarID;
 
         private string GetFileBase64(string? fileId)
         {
-            string base64 = null;
-    
             if (fileId == null)
                 return null;
             
             MemoryStream stream = new MemoryStream();
 
-            // this._DriveService.Files.Export(fileId, "application/vnd.google-apps.file").;
-            Console.WriteLine($"Stream size: {stream.Length}");
-            
             this._DriveService.Files.Get(fileId).Download(stream); 
+            
             return Convert.ToBase64String(stream.ToArray());
         }
-
         
         public List<Event> GetEvents()
         {
@@ -61,7 +55,8 @@ namespace LangaraCPSC.WebAPI
                     End = item.End.DateTimeRaw,
                     Description = item.Description,
                     Location = item.Location,
-                    Image = ((item.Attachments == null) ? null : this.GetFileBase64(item.Attachments.FirstOrDefault()?.FileId))
+                    Image = ((item.Attachments == null) ? null : this.GetFileBase64(item.Attachments.FirstOrDefault()?.FileId)),
+                    Link = item.HtmlLink
                 }).ToList();
         }
 
@@ -79,7 +74,6 @@ namespace LangaraCPSC.WebAPI
                 HttpClientInitializer = this.Credential,
                 ApplicationName = "LangaraCPSC.WebAPI"
             });
-            
 
             this._DriveService = new DriveService(new BaseClientService.Initializer()
             {
