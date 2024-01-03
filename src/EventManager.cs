@@ -1,12 +1,14 @@
 using System.Reflection;
+using System.Text.Json.Nodes;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Calendar.v3;
+using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
-using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
+using Calendar = Ical.Net.Calendar;
 
 namespace LangaraCPSC.WebAPI
 {
@@ -85,7 +87,6 @@ namespace LangaraCPSC.WebAPI
 
                     calendar.Version = "2.0";
                     
-                        
                     calendar.Events.Add(cEvent);
                     
                     writer.Write(new CalendarSerializer().SerializeToString(cEvent));
@@ -114,19 +115,35 @@ namespace LangaraCPSC.WebAPI
                     Link = new LinkPair(item.HtmlLink, this.GenerateICalFilename(item))
                 }).ToList();
         }
+
+        public static JsonObject GetCalendarConfig()
+        {
+            JsonObject config = new JsonObject();
+            
+            config.Add("type", Environment.GetEnvironmentVariable("CAL_ACCOUNT_TYPE"));
+            config.Add("project_id", Environment.GetEnvironmentVariable("CAL_PROJECT_ID"));
+            config.Add("private_key_id", Environment.GetEnvironmentVariable("CAL_PRIVATE_KEY_ID"));
+            config.Add("private_key", Environment.GetEnvironmentVariable("CAL_PRIVATE_KEY"));
+            config.Add("client_email", Environment.GetEnvironmentVariable("CAL_CLIENT_EMAIL"));
+            config.Add("client_id", Environment.GetEnvironmentVariable("CAL_CLIENT_ID"));
+            config.Add("auth_uri", Environment.GetEnvironmentVariable("CAL_AUTH_URI"));
+            config.Add("token_uri", Environment.GetEnvironmentVariable("CAL_TOKEN_URI"));
+            config.Add("auth_provider_x509_cert_url", Environment.GetEnvironmentVariable("CAL_PROVIDER_X509_CERT_URL"));
+            config.Add("client_x509_cert_url", Environment.GetEnvironmentVariable("CAL_CLIENT_X509_CERT_URL"));
+            config.Add("universe_domain", Environment.GetEnvironmentVariable("CAL_UNIVERSE_DOMAIN"));
+
+            return config;
+        }
         
-        public EventManager(string calendarID, string keyFile, string cachePath = "CalendarEvents")
+        public EventManager(string calendarID, string cachePath = "CalendarEvents")
         {
             this.CalendarID = calendarID;
             this.CachePath = cachePath;
 
             if (!Directory.Exists(cachePath))
-                Directory.CreateDirectory(cachePath);P:
+                Directory.CreateDirectory(cachePath);
             
-            using (FileStream stream = new FileStream(keyFile, System.IO.FileMode.Open, System.IO.FileAccess.Read))
-            {
-                this.Credential = GoogleCredential.FromStream(stream).CreateScoped(CalendarService.Scope.Calendar, DriveService.Scope.Drive, DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly).UnderlyingCredential as ServiceAccountCredential;
-            }
+            this.Credential = GoogleCredential.FromJson(EventManager.GetCalendarConfig().ToJsonString()).CreateScoped(CalendarService.Scope.Calendar, DriveService.Scope.Drive, DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly).UnderlyingCredential as ServiceAccountCredential;
 
             this._CalendarService = new CalendarService(new BaseClientService.Initializer()
             {

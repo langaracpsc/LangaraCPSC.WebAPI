@@ -28,13 +28,13 @@ services:
     ports:
       - "8000:8080"     
     networks:
-      - langaracpsc-dev  
+      - langaracpsc-dev 
+    env_file:
+      - .env
     environment:
       - HOSTNAME=${PG_HOSTNAME}
       - DATABASE=${PG_DATABASE}
       - USERNAME=${PG_USERNAME}
       - PASSWORD=${PG_PASSWORD}
       - PORT=${PG_PORT}
-      - CALENDAR_KEYFILE=keyfile.json
-      - CALENDAR_ID=${CALENDAR_ID}  
-    command: ["./wait-for-it.sh", "postgres_image:5433"]  
+

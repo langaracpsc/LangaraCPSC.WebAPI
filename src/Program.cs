@@ -75,7 +75,7 @@ namespace LangaraCPSC.WebAPI
             Services.ExecImageManagerInstance = new ExecImageManager(config);
             Services.ExecProfileManagerInstance = new ExecProfileManager(config, "ExecProfiles", "Execs", Services.ExecImageManagerInstance);
             Services.APIKeyManagerInstance = new APIKeyManager(new PostGRESDatabase(config));
-            Services.EventManagerInstance = new EventManager(environmentVariables["CALENDAR_ID"].ToString(), environmentVariables["CALENDAR_KEYFILE"].ToString());
+            Services.EventManagerInstance = new EventManager(environmentVariables["CAL_ID"].ToString());
        
             Services.APIKeyManagerInstance.LoadKeys();
             
