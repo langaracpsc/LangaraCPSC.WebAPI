@@ -8,5 +8,5 @@ client.py
 DatabaseConfig.json
 **/package.json
 **/.env
-**/keyfile.json
+**/keyfile_conf.json
 **/CalendarEvents

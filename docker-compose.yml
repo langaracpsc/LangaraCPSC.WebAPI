@@ -7,8 +7,8 @@ networks:
 services:
   postgres_image:
     image: postgres:latest
-      #    ports:
-      #      - "5432:5432"
+    ports:
+      - "5433:5432"
     restart: always
     volumes:
       - ./data/db:/var/lib/postgres/data
@@ -37,4 +37,4 @@ services:
       - PORT=${PG_PORT}
       - CALENDAR_KEYFILE=keyfile.json
       - CALENDAR_ID=${CALENDAR_ID}  
-
+    command: ["./wait-for-it.sh", "postgres_image:5433"]  
