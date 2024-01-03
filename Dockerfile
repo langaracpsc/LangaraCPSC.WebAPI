@@ -10,7 +10,6 @@ RUN rm -rf /KeyMan/OpenDatabaseAPI
 
 RUN mkdir /app
 COPY Images/ /app/Images
-COPY keyfile.json /app
 RUN dotnet publish -c release -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
