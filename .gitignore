@@ -9,3 +9,4 @@ DatabaseConfig.json
 **/package.json
 **/.env
 **/keyfile.json
+**/CalendarEvents

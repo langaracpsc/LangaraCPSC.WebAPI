@@ -14,7 +14,15 @@ namespace LangaraCPSC.WebAPI.Controllers
          
             return await Task.Run(() => new HttpObject(HttpReturnType.Success, Services.EventManagerInstance.GetEvents()).ToJson());
         }
- 
+
+        [HttpGet("ICal/{fileName}")]
+        public async Task<IActionResult> GetIcal([FromRoute] string fileName)
+        {
+            return await Task.Run(() => new FileStreamResult(Services.EventManagerInstance.GetIcalFileStream(fileName),
+                    "application/octet-stream") { FileDownloadName = fileName }
+            );
+        }
+        
          public EventController()
          {
          }

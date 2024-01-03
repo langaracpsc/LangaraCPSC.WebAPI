@@ -10,6 +10,7 @@
     <PackageReference Include="Google.Apis.Auth" Version="1.64.0" />
     <PackageReference Include="Google.Apis.Calendar.v3" Version="1.64.0.3248" />
     <PackageReference Include="Google.Apis.Drive.v3" Version="1.64.0.3256" />
+    <PackageReference Include="Ical.Net" Version="4.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
