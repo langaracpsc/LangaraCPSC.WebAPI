@@ -31,5 +31,8 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
+          build-args: |
+            APIURL=${{ secrets.APIURL }}
+            APIKEY=${{ secrets.APIKEY }}
           tags: |
             ghcr.io/langaracpsc/langaracpsc.webapi:latest
