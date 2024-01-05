@@ -47,7 +47,7 @@ namespace LangaraCPSC.WebAPI
             DatabaseConfiguration config = null;
 
             string[] configKeys = new string[] {
-                "HOSTNAME", "DATABASE", "USERNAME", "PASSWORD", "PORT", "CALENDAR_ID", "CALENDAR_KEY"
+                "CAL_ID", "HOSTNAME", "DATABASE", "USERNAME", "PASSWORD", "PORT" 
             };
 
             foreach (string key in configKeys)
@@ -70,11 +70,13 @@ namespace LangaraCPSC.WebAPI
                 environmentVariables["PASSWORD"].ToString(),
                 SQLClientType.PostGRES,
                 Convert.ToInt32(environmentVariables["PORT"]));
+
+            APIKeyDBContext dbContext = new APIKeyDBContext();
             
             Services.ExecManagerInstance = new ExecManager(config);
             Services.ExecImageManagerInstance = new ExecImageManager(config);
             Services.ExecProfileManagerInstance = new ExecProfileManager(config, "ExecProfiles", "Execs", Services.ExecImageManagerInstance);
-            Services.APIKeyManagerInstance = new APIKeyManager(new PostGRESDatabase(config));
+            Services.APIKeyManagerInstance = new APIKeyManager(dbContext);
             Services.EventManagerInstance = new EventManager(environmentVariables["CAL_ID"].ToString());
        
             Services.APIKeyManagerInstance.LoadKeys();
