@@ -9,7 +9,7 @@ RUN git submodule update --init opendatabaseapi
 RUN rm -rf /KeyMan/OpenDatabaseAPI
 
 RUN mkdir /app
-COPY Images/ /app/Images
+RUN mkdir /app/Images
 RUN dotnet publish -c release -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
