@@ -230,7 +230,8 @@ namespace LangaraCPSC.WebAPI.Controllers
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    return new HttpError(HttpErrorType.Unknown, e.Message).ToJson();
+                    return new HttpError(HttpErrorType.
+                        Unknown, e.Message).ToJson();
                 }
                
                 return new HttpObject(HttpReturnType.Success, image).ToJson();

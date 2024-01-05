@@ -14,12 +14,16 @@ namespace LangaraCPSC.WebAPI
     {
         President,
         VicePresident,
+        VicePresidentInternal,
+        VicePresidentExternal,
         TechLead,
-        AsstTechLead,
+        AssistTechLead,
         GeneralRep,
         PublicRelations,
         Finance,
-        Events
+        Events,
+        Secretary,
+        Media
     }
 
     /// <summary>

@@ -8,6 +8,7 @@ using Google.Apis.Services;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
+using Newtonsoft.Json;
 using Calendar = Ical.Net.Calendar;
 
 namespace LangaraCPSC.WebAPI
@@ -53,17 +54,28 @@ namespace LangaraCPSC.WebAPI
         private readonly string CalendarID;
 
         private readonly string CachePath;
-        
+
+        private Dictionary<string, string> FileCache;
+
         private string GetFileBase64(string? fileId)
         {
             if (fileId == null)
                 return null;
+
+            string? value = null;
+
+            if (this.FileCache.TryGetValue(fileId, out value))
+                return value;
             
             MemoryStream stream = new MemoryStream();
-
+            
             this._DriveService.Files.Get(fileId).Download(stream); 
             
-            return Convert.ToBase64String(stream.ToArray());
+            string base64String = Convert.ToBase64String(stream.ToArray());
+
+            this.FileCache.Add(fileId, base64String);
+
+            return base64String; 
         }
 
         private string GenerateICalFilename(Google.Apis.Calendar.v3.Data.Event e)
@@ -76,7 +88,6 @@ namespace LangaraCPSC.WebAPI
                 End = new CalDateTime(DateTime.Parse(e.End.DateTimeRaw)),
                 Location = e.Location
             };
-            
             
             string path = $"{this.CachePath}/{e.Summary.Replace(' ', '_').Replace('/', '-')}.ics";
             
@@ -115,6 +126,7 @@ namespace LangaraCPSC.WebAPI
                     Link = new LinkPair(item.HtmlLink, this.GenerateICalFilename(item))
                 }).ToList();
         }
+            
 
         public static JsonObject GetCalendarConfig()
         {
@@ -140,6 +152,8 @@ namespace LangaraCPSC.WebAPI
             this.CalendarID = calendarID;
             this.CachePath = cachePath;
 
+            this.FileCache = new Dictionary<string, string>();
+            
             if (!Directory.Exists(cachePath))
                 Directory.CreateDirectory(cachePath);
             
@@ -150,7 +164,7 @@ namespace LangaraCPSC.WebAPI
                 HttpClientInitializer = this.Credential,
                 ApplicationName = "LangaraCPSC.WebAPI"
             });
-
+                
             this._DriveService = new DriveService(new BaseClientService.Initializer()
             {
                 HttpClientInitializer = this.Credential,

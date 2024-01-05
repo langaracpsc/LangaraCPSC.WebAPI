@@ -5,54 +5,136 @@
 		"lastname": "Tseng",
 		"email": "atseng08@mylangara.ca",
 		"position": 0
-	}, 
+	},
+
 	{
 		"studentid": 100401242,
 		"firstname": "Rishit",
 		"lastname": "Singh",
 		"email": "rsrishitsingh@gmail.com",
-		"position": 2
+		"position": 4
 	}, 
+
 	{
-		"studentid": 100401242,
+		"studentid": 100395057,
 		"firstname": "Matthew",
 		"lastname": "Widjaja",
 		"email": "mwidjaja03@mylangara.ca",
-		"position": 3
+		"position": 6
 	}, 
+
 	{
 		"studentid": 100390120,
 		"firstname": "Van",
 		"lastname": "Valdez",
 		"email": "valdez.vanms@gmail.com",
-		"position": 3
+		"position": 6 
 	}, 
+
 	{
 		"studentid": 100390120,
-		"firstname": "Van",
-		"lastname": "Valdez",
-		"email": "valdez.vanms@gmail.com",
-		"position": 3
+		"firstname": "Jon",
+		"lastname": "Ung",
+		"email": "jonathan.keith.ung@gmail.com",
+		"position": 1
 	}, 
+
 	{
 		"studentid": 100408400,
 		"firstname": "Mohit",
 		"lastname": "Saxena",
 		"email": "manusaxena1249@gmail.com",
-		"position": 4
-	}, 
+		"position": 3
+	},
+
 	{
 		"studentid": 100394333,
 		"firstname": "Mark",
 		"lastname": "Danskin",
 		"email": "markdanskin@gmail.com",
+		"position": 7
+	}, 
+
+	{
+		"studentid": 100414626,
+		"firstname": "(Aaron) Tiankuo",
+		"lastname": "Chen",
+		"email": "aaron.chen0803@gmail.com",
+		"position": 7
+	},
+
+	{
+		"studentid": 100417631,
+		"firstname": "Béatrice",
+		"lastname": "Scott",
+		"email": "beatricesoleilscott@gmail.com",
+		"position": 10
+	}, 
+
+	{
+		"studentid": 100388795,
+		"firstname": "Saemi",
+		"lastname": "Park",
+		"email": "spark70@mylangara.ca",
+		"position": 2
+	},
+
+	{
+		"studentid": 100405324,
+		"firstname": "Neha",
+		"lastname": "",
+		"email": "neha07@mylangara.ca",
+		"position": 8
+	}, 
+
+	{
+		"studentid": 100390068,
+		"firstname": "(Paul) Pawel",
+		"lastname": "Michalski",
+		"email": "pmichalski00@mylangara.ca",
 		"position": 5
 	}, 
+
 	{
-		"studentid": 100402374,
-		"firstname": "Arnold",
-		"lastname": "Desouza",
-		"email": "arnoldkevindesouza@gmail.com",
-		"position": 6
-	} 
+		"studentid": 100189060,
+		"firstname": "Tyler",
+		"lastname": "Qiu",
+		"email": "tqiu01@mylangara.ca",
+		"position": 8
+	}, 
+
+	{
+		"studentid": 100402155,
+		"firstname": "Ethan",
+		"lastname": "Wilson",
+		"email": "ethanwilson@shaw.ca",
+		"position": 9
+	},
+
+	{
+		"studentid": 100371063,
+		"firstname": "Lucas",
+		"lastname": "Paganine",
+		"email": "lpaganine00@mylangara.ca",
+		"position": 1
+	},
+
+	{
+		"studentid": 100396670,
+		"firstname": "Isabelle",
+		"lastname": "Wang",
+		"email": "isabellewn2011@gmail.com",
+		"position": 7
+	},
+
+	{
+		"studentid": 100412307,
+		"firstname": "Andrea Alejandra",
+		"lastname": "Arce Arenas",
+		"email": "aarce01@mylangara.ca",
+		"position": 11
+	}
+	
+
 ]
+
