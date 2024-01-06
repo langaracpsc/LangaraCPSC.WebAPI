@@ -24,7 +24,22 @@ public class FileIO
         return true;
     }
 
+    public static bool WriteBytesToFile(byte[] buffer, string file)
+    {
+        try
+        {
+            File.WriteAllBytes(file, buffer); 
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            
+            return false;
+        }
 
+        return true;
+    }
+    
     public static string ReadFromFile(string file)
     {
         string buffer = null;
@@ -43,6 +58,24 @@ public class FileIO
         return buffer;
     }
 
+    public static byte[] ReadBytesFromFile(string file)
+    {
+        byte[] buffer = null;
+        
+        try
+        {
+            buffer = File.ReadAllBytes(file); 
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        
+        return buffer;
+    }
+
+    
     public static bool AssertDirectory(string directory)
     {
         try

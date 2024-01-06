@@ -1,5 +1,6 @@
 using System.Collections;
 using KeyMan;
+using Microsoft.Extensions.FileProviders;
 using OpenDatabase;
 using OpenDatabaseAPI;
 
@@ -38,9 +39,21 @@ namespace LangaraCPSC.WebAPI
             }
 
             app.UseCors("CORS");
+
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "Images")),
+                RequestPath  = "/Images",
+                ServeUnknownFileTypes  = true
+            });
+            
             app.UseHttpsRedirection();
+
+            Console.WriteLine(Path.Combine(builder.Environment.ContentRootPath, "Images"));
+            
             app.UseAuthorization();
             app.MapControllers();
+            
 
             IDictionary environmentVariables = Environment.GetEnvironmentVariables();
 

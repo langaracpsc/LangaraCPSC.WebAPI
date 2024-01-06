@@ -19,19 +19,19 @@ namespace LangaraCPSC.WebAPI
 
         public bool SaveToFile(string file)
         {
-            return FileIO.WriteToFile(this.Buffer, file);
+            return FileIO.WriteBytesToFile(Convert.FromBase64String(this.Buffer), file);
         }
         
         public bool SaveToFile()
         {
-            return FileIO.WriteToFile(this.Buffer, $"{this.ID}.png");
+            return FileIO.WriteBytesToFile(Convert.FromBase64String(this.Buffer), $"{this.ID}.png");
         }
 
         public static ExecImageBase64 LoadFromFile(string file)
         {
             string[] split = file.Split('/'), split1;
 
-            return new ExecImageBase64(int.Parse((split1 = split[split.Length - 1].Split('.'))[0]), FileIO.ReadFromFile(file));
+            return new ExecImageBase64(int.Parse((split1 = split[split.Length - 1].Split('.'))[0]), Convert.ToBase64String(FileIO.ReadBytesFromFile(file)));
         }
 
         public static ExecImageBase64 FromRecord(Record record)

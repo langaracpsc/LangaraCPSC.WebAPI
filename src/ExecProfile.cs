@@ -169,7 +169,7 @@ namespace LangaraCPSC.WebAPI
             List<ExecImageProfile> execImageProfiles = new List<ExecImageProfile>();
 
             List<ExecProfile> activeProfiles = this.GetActiveProfiles();
-
+            
             foreach (ExecProfile profile in activeProfiles)
                 execImageProfiles.Add(new ExecImageProfile(profile, this.ImageManager.GetImageByID(profile.ID).Buffer));
 
