@@ -161,7 +161,7 @@ namespace LangaraCPSC.WebAPI
             if (profile == null)
                 return null;
 
-            return new ExecImageProfile(profile, this.ImageManager.GetImageByID(id).Buffer);
+            return new ExecImageProfile(profile, this.ImageManager.GetImageByID(id).Path);
         }
 
         public List<ExecImageProfile> GetActiveImageProfiles()
@@ -171,7 +171,7 @@ namespace LangaraCPSC.WebAPI
             List<ExecProfile> activeProfiles = this.GetActiveProfiles();
             
             foreach (ExecProfile profile in activeProfiles)
-                execImageProfiles.Add(new ExecImageProfile(profile, this.ImageManager.GetImageByID(profile.ID).Buffer));
+                execImageProfiles.Add(new ExecImageProfile(profile, this.ImageManager.GetImageByID(profile.ID).Path));
 
             return execImageProfiles;
         }
