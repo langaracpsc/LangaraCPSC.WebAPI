@@ -234,7 +234,7 @@ namespace LangaraCPSC.WebAPI.Controllers
                 }
 
                 if (!System.IO.File.Exists(image.Path))
-                    image.SaveToFile();
+                    image.SaveToFile($"Images/{image.Path}");
                
                 return new HttpObject(HttpReturnType.Success, image).ToJson();
             });
