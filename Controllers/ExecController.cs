@@ -225,7 +225,6 @@ namespace LangaraCPSC.WebAPI.Controllers
                         (image = new ExecImageBase64(((JsonElement)request["id"]).GetInt64(), request["buffer"].ToString()))
                         ); 
 
-                    image.SaveToFile($"{Services.ExecImageManagerInstance.ImageDir}/{image.Path}");
                 } 
                 catch (Exception e)
                 {
@@ -233,6 +232,9 @@ namespace LangaraCPSC.WebAPI.Controllers
                     return new HttpError(HttpErrorType.
                         Unknown, e.Message).ToJson();
                 }
+
+                if (!System.IO.File.Exists(image.Path))
+                    image.SaveToFile();
                
                 return new HttpObject(HttpReturnType.Success, image).ToJson();
             });
