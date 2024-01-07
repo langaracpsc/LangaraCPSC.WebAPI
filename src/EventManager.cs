@@ -55,6 +55,8 @@ namespace LangaraCPSC.WebAPI
 
         private readonly string CachePath;
 
+        private readonly string ImagePath;
+        
         private Dictionary<string, string> FileCache;
 
         private string GetFileBase64(string? fileId)
@@ -78,6 +80,32 @@ namespace LangaraCPSC.WebAPI
             return base64String; 
         }
 
+        public string FetchFile(string? fileId, string extension)
+        {
+            if (fileId == null)
+                return null;
+
+            string? value = null;
+
+            if (this.FileCache.TryGetValue(fileId, out value))
+                return value;
+
+            string path = $"{this.ImagePath}/{fileId}.{extension}";
+
+            if (!File.Exists(path))
+            {
+                MemoryStream stream = new MemoryStream();
+            
+                this._DriveService.Files.Get(fileId).Download(stream); 
+
+                this.FileCache.Add(fileId, path);
+                
+                File.WriteAllBytes(path, stream.GetBuffer());
+            }
+            
+            return path; 
+        }
+        
         private string GenerateICalFilename(Google.Apis.Calendar.v3.Data.Event e)
         {
             CalendarEvent cEvent = new CalendarEvent
@@ -122,12 +150,11 @@ namespace LangaraCPSC.WebAPI
                     End = item.End.DateTimeRaw,
                     Description = item.Description,
                     Location = item.Location,
-                    Image = ((item.Attachments == null) ? null : this.GetFileBase64(item.Attachments.FirstOrDefault()?.FileId)),
+                    Image = ((item.Attachments == null) ? null : this.FetchFile(item.Attachments.FirstOrDefault()?.FileId, "png")),
                     Link = new LinkPair(item.HtmlLink, this.GenerateICalFilename(item))
                 }).ToList();
         }
             
-
         public static JsonObject GetCalendarConfig()
         {
             JsonObject config = new JsonObject();
@@ -147,19 +174,21 @@ namespace LangaraCPSC.WebAPI
             return config;
         }
         
-        public EventManager(string calendarID, string cachePath = "CalendarEvents")
+        public EventManager(string calendarID, string cachePath = "CalendarEvents", string imagePath = "Images")
         {
+            
             this.CalendarID = calendarID;
             this.CachePath = cachePath;
-
+            this.ImagePath = imagePath;
+            
             this.FileCache = new Dictionary<string, string>();
             
             if (!Directory.Exists(cachePath))
                 Directory.CreateDirectory(cachePath);
             
-            // this.Credential = GoogleCredential.FromFile("keyfile_conf.json").CreateScoped(CalendarService.Scope.Calendar, DriveService.Scope.Drive, DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly).UnderlyingCredential as ServiceAccountCredential;
+            this.Credential = GoogleCredential.FromFile("keyfile_conf.json").CreateScoped(CalendarService.Scope.Calendar, DriveService.Scope.Drive, DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly).UnderlyingCredential as ServiceAccountCredential;
             
-            this.Credential = GoogleCredential.FromJson(EventManager.GetCalendarConfig().ToJsonString()).CreateScoped(CalendarService.Scope.Calendar, DriveService.Scope.Drive, DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly).UnderlyingCredential as ServiceAccountCredential;
+            // this.Credential = GoogleCredential.FromJson(EventManager.GetCalendarConfig().ToJsonString()).CreateScoped(CalendarService.Scope.Calendar, DriveService.Scope.Drive, DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly).UnderlyingCredential as ServiceAccountCredential;
 
             this._CalendarService = new CalendarService(new BaseClientService.Initializer()
             {
