@@ -123,12 +123,11 @@ namespace LangaraCPSC.WebAPI
                 using (StreamWriter writer = new StreamWriter(path))
                 {
                     Calendar calendar = new Calendar();
-
-                    calendar.Version = "2.0";
                     
+                    calendar.Version = "2.0";
                     calendar.Events.Add(cEvent);
                     
-                    writer.Write(new CalendarSerializer().SerializeToString(cEvent));
+                    writer.Write(new CalendarSerializer().SerializeToString(calendar));
                     writer.Flush();
                 }
             
