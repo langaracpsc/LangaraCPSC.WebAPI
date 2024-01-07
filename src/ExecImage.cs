@@ -131,8 +131,14 @@ namespace LangaraCPSC.WebAPI
                 return null;
            
             Console.WriteLine(JsonConvert.SerializeObject(records));
-           
-            this.ExecImageMap.Add((image = ExecImageBase64.LoadFromFile($"{this.ImageDir}/{records[0].Values[1].ToString()}")).ID, image);
+
+            string path = $"{this.ImageDir}/{records[0].Values[1].ToString()}";
+
+            if (!File.Exists(path))
+                return null; 
+            
+            this.ExecImageMap.Add((image = ExecImageBase64.LoadFromFile(path)).ID, image);
+            
             return image;
         }
 
