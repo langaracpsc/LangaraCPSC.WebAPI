@@ -110,14 +110,14 @@ namespace LangaraCPSC.WebAPI
         {
             CalendarEvent cEvent = new CalendarEvent
             {
-                Summary = e.Summary,
-                Description = e.Description,  
-                Start = new CalDateTime(DateTime.Parse(e.Start.DateTimeRaw)), 
-                End = new CalDateTime(DateTime.Parse(e.End.DateTimeRaw)),
-                Location = e.Location
+                Summary = e.Summary ?? "Unknown",
+                Description = e.Description ?? "No description",  
+                Start = new CalDateTime(DateTime.Parse((e.Start != null) ? e.Start.DateTimeRaw : new DateTime().ToLongDateString())), 
+                End = (e.End != null) ? new CalDateTime(e.End.DateTimeRaw) : null,
+                Location = e.Location 
             };
             
-            string path = $"{this.CachePath}/{e.Summary.Replace(' ', '_').Replace('/', '-')}.ics";
+            string path = $"{this.CachePath}/{cEvent.Summary.Replace(' ', '_').Replace('/', '-')}.ics";
             
             if (!File.Exists(path))
                 using (StreamWriter writer = new StreamWriter(path))
@@ -141,16 +141,25 @@ namespace LangaraCPSC.WebAPI
 
         public List<Event> GetEvents()
         {
-            return this._CalendarService.Events.List(this.CalendarID).Execute().Items.Select(item =>
-                new Event 
+            EventAttachment? attachment;
+
+            var items = this._CalendarService.Events.List(this.CalendarID).Execute().Items ??
+                        new List<Google.Apis.Calendar.v3.Data.Event>();
+
+            List<Event> events = new List<Event>();
+            
+           return items.Where(item => item != null).Select(item =>
+               new Event
                 {
-                    Title = item.Summary,
-                    Start = item.Start.DateTimeRaw,
-                    End = item.End.DateTimeRaw,
-                    Description = item.Description,
-                    Location = item.Location,
-                    Image = ((item.Attachments == null || item.Attachments.Count < 1) ? null : this.FetchFile(item.Attachments.FirstOrDefault()?.FileId, "png")),
-                    Link = new LinkPair(item.HtmlLink, this.GenerateICalFilename(item))
+                    Title = item.Summary ?? "Unknown",
+                    Start = (item.Start != null) ? item.Start.DateTimeRaw : item.OriginalStartTime.DateTimeRaw,
+                    End = (item.End != null) ? item.End.DateTimeRaw : null,
+                    Description = item.Description ?? "No description.",
+                    Location = item.Location ?? "TBD",
+                    Image = ((item.Attachments == null || item.Attachments.Count < 1)
+                        ? null
+                        : this.FetchFile((item.Attachments.Count > 1) ? item.Attachments[0].FileId : null, "png")),
+                    Link = new LinkPair(item.HtmlLink ?? null, this.GenerateICalFilename(item) ?? null)
                 }).ToList();
         }
             
@@ -169,21 +178,20 @@ namespace LangaraCPSC.WebAPI
             config.Add("auth_provider_x509_cert_url", Environment.GetEnvironmentVariable("CAL_PROVIDER_X509_CERT_URL"));
             config.Add("client_x509_cert_url", Environment.GetEnvironmentVariable("CAL_CLIENT_X509_CERT_URL"));
             config.Add("universe_domain", Environment.GetEnvironmentVariable("CAL_UNIVERSE_DOMAIN"));
-
+ 
             return config;
         }
         
         public EventManager(string calendarID, string cachePath = "CalendarEvents", string imagePath = "Images")
         {
-            
             this.CalendarID = calendarID;
             this.CachePath = cachePath;
             this.ImagePath = imagePath;
             
             this.FileCache = new Dictionary<string, string>();
             
-            if (!Directory.Exists(cachePath))
-                Directory.CreateDirectory(cachePath);
+            if (!Directory.Exists(this.CachePath))
+                Directory.CreateDirectory(this.CachePath);
             
             // this.Credential = GoogleCredential.FromFile("keyfile_conf.json").CreateScoped(CalendarService.Scope.Calendar, DriveService.Scope.Drive, DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly).UnderlyingCredential as ServiceAccountCredential;
             
@@ -203,3 +211,4 @@ namespace LangaraCPSC.WebAPI
         }
     }
 }
+ 
