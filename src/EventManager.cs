@@ -149,7 +149,7 @@ namespace LangaraCPSC.WebAPI
                     End = item.End.DateTimeRaw,
                     Description = item.Description,
                     Location = item.Location,
-                    Image = ((item.Attachments == null) ? null : this.FetchFile(item.Attachments.FirstOrDefault()?.FileId, "png")),
+                    Image = ((item.Attachments == null || item.Attachments.Count < 1) ? null : this.FetchFile(item.Attachments.FirstOrDefault()?.FileId, "png")),
                     Link = new LinkPair(item.HtmlLink, this.GenerateICalFilename(item))
                 }).ToList();
         }
