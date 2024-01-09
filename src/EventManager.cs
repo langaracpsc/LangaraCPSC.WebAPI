@@ -148,7 +148,7 @@ namespace LangaraCPSC.WebAPI
 
             List<Event> events = new List<Event>();
             
-           return items.Where(item => item != null).Select(item =>
+           return items.Where(item => item != null && item.Summary != null).Select(item =>
                new Event
                 {
                     Title = item.Summary ?? "Unknown",
