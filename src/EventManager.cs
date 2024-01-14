@@ -112,8 +112,8 @@ namespace LangaraCPSC.WebAPI
             {
                 Summary = e.Summary ?? "Unknown",
                 Description = e.Description ?? "No description",  
-                Start = new CalDateTime(DateTime.Parse((e.Start != null) ? e.Start.DateTimeRaw : new DateTime().ToLongDateString())), 
-                End = (e.End != null) ? new CalDateTime(e.End.DateTimeRaw) : null,
+                Start = new CalDateTime(DateTime.Parse((e.Start != null && e.Start?.DateTimeRaw != null) ? e.Start.DateTimeRaw : new DateTime().ToLongDateString())), 
+                End = (e.End != null && e.End.DateTimeRaw != null) ? new CalDateTime(e.End.DateTimeRaw) : null,
                 Location = e.Location 
             };
             
@@ -194,7 +194,7 @@ namespace LangaraCPSC.WebAPI
                 Directory.CreateDirectory(this.CachePath);
             
             // this.Credential = GoogleCredential.FromFile("keyfile_conf.json").CreateScoped(CalendarService.Scope.Calendar, DriveService.Scope.Drive, DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly).UnderlyingCredential as ServiceAccountCredential;
-            
+  
             this.Credential = GoogleCredential.FromJson(EventManager.GetCalendarConfig().ToJsonString()).CreateScoped(CalendarService.Scope.Calendar, DriveService.Scope.Drive, DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly).UnderlyingCredential as ServiceAccountCredential;
 
             this._CalendarService = new CalendarService(new BaseClientService.Initializer()
