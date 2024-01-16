@@ -13,6 +13,8 @@ git clone https://github.com/langaracpsc/LangaraCPSC.WebAPI.git
 ```
 
 ### Configuring
+
+#### Setting up the repo
 ```bash
 cd LangaraCPSC.WebAPI;
 
@@ -20,9 +22,10 @@ git submodule update --init --remote opendatabaseapi;
 git submodule update --init --remote KeyMan;
 ```
 
-Put the Google service account credentials in `keyfile.json`. The original credentials file can be downloaded from Google cloud console.
+#### Setting up credentials
+Put the Google service account credentials in `keyfile.json`. The original credentials file can be downloaded from Google cloud console. [More Info](https://developers.google.com/workspace/guides/create-credentials);
 
-Set `CALENDAR_ID` variable in `.env` to the ID of the calendar to fetch from. 
+Create a `.env` file from `.templateenv` and set the variables as mentioned.  
 
 ```bash
 mkdir data && mkdir data/db;
@@ -43,4 +46,3 @@ docker exec -it -u postgres <CONTAINER> bash; # access the container
 ```bash
 psql < data/dump;
 ```
-
