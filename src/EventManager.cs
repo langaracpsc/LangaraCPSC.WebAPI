@@ -1,4 +1,4 @@
-using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
@@ -8,7 +8,7 @@ using Google.Apis.Services;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
-using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Calendar = Ical.Net.Calendar;
 
 namespace LangaraCPSC.WebAPI
@@ -41,6 +41,96 @@ namespace LangaraCPSC.WebAPI
         public string? Image { get; set; }
 
         public LinkPair Link { get; set; }
+    }
+
+    public class EventRRule
+    {
+        public string Frequency { get; set; }
+
+        public string WeekStart { get; set; }
+
+        public DateTime Until { get; set; }
+
+        public string[] ByDay { get; set; }
+
+        private static Dictionary<string, DayOfWeek> ByDayMap = new Dictionary<string, DayOfWeek>()
+        {
+            { "SU", DayOfWeek.Friday },
+            { "MO", DayOfWeek.Monday }, 
+            { "TU", DayOfWeek.Tuesday },
+            { "WE", DayOfWeek.Wednesday },
+            { "TH", DayOfWeek.Thursday },
+            { "FR", DayOfWeek.Friday },
+            { "SA", DayOfWeek.Saturday }
+        };
+
+        private static Dictionary<string, int> FrequencyMap = new Dictionary<string, int>()
+        {
+            { "DAILY", 1 },
+            { "WEEKLY", 7 },
+            { "MONTHLY", 30 },
+            { "YEARLY", 365 }
+        };
+
+        private static int GetDaysByFrequency(string frequency, int year, int month = 1)
+        {
+            if (frequency != "MONTHLY")
+                return FrequencyMap[frequency];
+            
+            if (month == 2)
+                return ((year % 4) == 0) ? 29 : 28;
+
+            return (month % 2 != 0) ? 30 : 31;
+        }
+        
+        public static EventRRule FromRRuleString(string str)
+        {
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+
+            foreach (string pair in str.Substring(str.IndexOf(':'), str.Length).Split(';'))
+            {
+                string[] temp = pair.Split();
+
+                dict.Add(temp[0], temp[1]);
+            }
+
+            return new EventRRule {
+                Frequency = dict["FREQ"],
+                WeekStart = dict["WKST"],
+                Until = DateTime.Parse(dict["UNTIL"]),
+                ByDay = dict["BYDAY"].Split(',')
+            };
+        }
+
+        public List<Event> ToEvents(Google.Apis.Calendar.v3.Data.Event startEvent)
+        {
+            List<Event> events = new List<Event>();
+
+            DateTime start = DateTime.Parse(startEvent.OriginalStartTime.DateTimeRaw);
+
+            int days = 0;
+            
+            for (;
+                 start.CompareTo(this.Until) < 0;
+                 start = start.AddDays(days = GetDaysByFrequency(this.Frequency, start.Year, start.Month)))
+                foreach (string day in this.ByDay)
+                {
+                    DateTime end = DateTime.Parse(startEvent.End.DateTimeRaw);
+
+                    end = end.AddDays(days);
+
+                    events.Add(new Event
+                    {
+                        Title = startEvent.Summary ?? "Unknown",
+                        Start = new DateTimeOffset(start, TimeZoneInfo.Local.GetUtcOffset(start)).ToString(),
+                        End = new DateTimeOffset(end, TimeZoneInfo.Local.GetUtcOffset(end)).ToString(),
+                        Description = startEvent.Description ?? "No description.",
+                        Location = startEvent.Location ?? "TBD",
+                    });
+                }
+
+            return events;
+        }
     }
 
     public class EventManager
@@ -149,18 +239,27 @@ namespace LangaraCPSC.WebAPI
             List<Event> events = new List<Event>();
             
            return items.Where(item => item != null && item.Summary != null).Select(item =>
-               new Event
-                {
-                    Title = item.Summary ?? "Unknown",
-                    Start = (item.Start != null) ? item.Start.DateTimeRaw : item.OriginalStartTime.DateTimeRaw,
-                    End = (item.End != null) ? item.End.DateTimeRaw : null,
-                    Description = item.Description ?? "No description.",
-                    Location = item.Location ?? "TBD",
-                    Image = ((item.Attachments == null || item.Attachments.Count < 1)
-                        ? null
-                        : this.FetchFile((item.Attachments.Count > 1) ? item.Attachments[0].FileId : null, "png")),
-                    Link = new LinkPair(item.HtmlLink ?? null, this.GenerateICalFilename(item) ?? null)
-                }).ToList();
+           {
+               if (item.Start == null)
+               {
+                   Console.WriteLine($"NULL: ${item.Summary}");
+                   return EventRRule.FromRRuleString(item.Recurrence[0]).ToEvents(item)
+                       .Where(e => (e.Start.CompareTo(DateTime.Now) > 0)).FirstOrDefault();
+               }
+
+               return new Event
+               {
+                   Title = item.Summary ?? "Unknown",
+                   Start = (item.Start != null) ? item.Start.DateTimeRaw : item.OriginalStartTime.DateTimeRaw,
+                   End = (item.End != null) ? item.End.DateTimeRaw : null,
+                   Description = item.Description ?? "No description.",
+                   Location = item.Location ?? "TBD",
+                   Image = ((item.Attachments == null || item.Attachments.Count < 1)
+                       ? null
+                       : this.FetchFile((item.Attachments.Count > 1) ? item.Attachments[0].FileId : null, "png")),
+                   Link = new LinkPair(item.HtmlLink ?? null, this.GenerateICalFilename(item) ?? null)
+               };
+           }).ToList();
         }
             
         public static JsonObject GetCalendarConfig()
