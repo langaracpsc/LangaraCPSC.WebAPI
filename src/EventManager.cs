@@ -87,17 +87,18 @@ namespace LangaraCPSC.WebAPI
         {
             Dictionary<string, string> dict = new Dictionary<string, string>();
 
-            foreach (string pair in str.Substring(str.IndexOf(':'), str.Length).Split(';'))
+            int index = str.IndexOf(':') + 1;
+                
+            foreach (string pair in str.Substring(index, str.Length - index).Split(';'))
             {
-                string[] temp = pair.Split();
-
+                string[] temp = pair.Split('=');
                 dict.Add(temp[0], temp[1]);
             }
-
+    
             return new EventRRule {
                 Frequency = dict["FREQ"],
-                WeekStart = dict["WKST"],
-                Until = DateTime.Parse(dict["UNTIL"]),
+                WeekStart = dict.ContainsKey("WKST") ? dict["WKST"] : null,
+                Until = dict.ContainsKey("UNTIL") ? DateTime.ParseExact(dict["UNTIL"], "yyyyMMddTHHmmssZ", null, System.Globalization.DateTimeStyles.AssumeUniversal) : DateTime.Now.AddMonths(1),
                 ByDay = dict["BYDAY"].Split(',')
             };
         }
@@ -106,29 +107,30 @@ namespace LangaraCPSC.WebAPI
         {
             List<Event> events = new List<Event>();
 
-            DateTime start = DateTime.Parse(startEvent.OriginalStartTime.DateTimeRaw);
+            DateTime start = DateTime.Parse(startEvent.Start.DateTimeRaw);
 
             int days = 0;
             
-            for (;
-                 start.CompareTo(this.Until) < 0;
-                 start = start.AddDays(days = GetDaysByFrequency(this.Frequency, start.Year, start.Month)))
-                foreach (string day in this.ByDay)
+            for (; start.CompareTo(this.Until) < 0; start = start.AddDays(days = GetDaysByFrequency(this.Frequency, start.Year, start.Month)))
+                for (int x = 0;  x < this.ByDay.Length; x++)
                 {
-                    DateTime end = DateTime.Parse(startEvent.End.DateTimeRaw);
+                    DateTime end = DateTime.Parse(startEvent.End.DateTimeRaw).AddDays(days), startWeekDay = start;
 
-                    end = end.AddDays(days);
+                    int weekDays = (x > 0) ? (int)EventRRule.ByDayMap[this.ByDay[x]] + 1 : 0;
 
+                    startWeekDay = startWeekDay.AddDays(weekDays);
+                    end = end.AddDays(days + weekDays);
+                        
                     events.Add(new Event
                     {
                         Title = startEvent.Summary ?? "Unknown",
-                        Start = new DateTimeOffset(start, TimeZoneInfo.Local.GetUtcOffset(start)).ToString(),
+                        Start = new DateTimeOffset(startWeekDay, TimeZoneInfo.Local.GetUtcOffset(startWeekDay)).ToString(),
                         End = new DateTimeOffset(end, TimeZoneInfo.Local.GetUtcOffset(end)).ToString(),
                         Description = startEvent.Description ?? "No description.",
                         Location = startEvent.Location ?? "TBD",
                     });
                 }
-
+ 
             return events;
         }
     }
@@ -240,12 +242,9 @@ namespace LangaraCPSC.WebAPI
             
            return items.Where(item => item != null && item.Summary != null).Select(item =>
            {
-               if (item.Start == null)
-               {
-                   Console.WriteLine($"NULL: ${item.Summary}");
+               if (item.Recurrence != null && item.Recurrence.Count > 0)
                    return EventRRule.FromRRuleString(item.Recurrence[0]).ToEvents(item)
-                       .Where(e => (e.Start.CompareTo(DateTime.Now) > 0)).FirstOrDefault();
-               }
+                       .Where(e => (DateTime.Parse(e.Start).CompareTo(DateTime.Now) > 0)).FirstOrDefault();
 
                return new Event
                {
