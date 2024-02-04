@@ -3,6 +3,7 @@ obj/
 bin/
 data/
 .logs
+Images/*
 Scripts/Images
 client.py
 DatabaseConfig.json

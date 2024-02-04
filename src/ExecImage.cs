@@ -11,9 +11,9 @@ namespace LangaraCPSC.WebAPI
 {
     public class ExecImageBase64 : IRecord, IPayload
     {
-        public long ID;
+        public readonly long ID;
 
-        public string Path;
+        public readonly string Path;
 
         public string Buffer { get; private set; }
 
@@ -75,12 +75,12 @@ namespace LangaraCPSC.WebAPI
             });
         }
 
-        public ExecImageBase64(long id, string buffer)
+        public ExecImageBase64(long id, string buffer, string path = null)
         { 
             this.ID = id;
-            this.Buffer = buffer;
-
-            this.Path = $"{this.ID}.png";
+            this.Buffer = buffer; 
+                
+            this.Path = (path == null) ?  $"{this.ID}.png" : path;
         }
     }
 
@@ -103,6 +103,15 @@ namespace LangaraCPSC.WebAPI
             });
         }
 
+        public bool UpdateImage(long id, string path)
+        {
+            return this.DatabaseInstance.UpdateRecord(
+                    new Record(new string[] {"ID"}, new object[]{ id.ToString() }),
+                    new Record(new string[] { "ID", "path" }, new object[]{ id.ToString(), path }),
+                    this.ExecImageTable.Name
+                );
+        }
+
         public bool AddExecImage(ExecImageBase64 execImage)
         {
             return this.DatabaseInstance.InsertRecord(execImage.ToRecord(), this.ExecImageTable.Name);
@@ -110,8 +119,14 @@ namespace LangaraCPSC.WebAPI
 
         public bool ExecImageExists(long id)
         {
-            return (this.DatabaseInstance.FetchQueryData($"SELECT * FROM {this.ExecImageTable.Name} WHERE ID=\'{id}\'",
-                this.ExecImageTable.Name).Length > 0);
+            Console.WriteLine($"ID: {id}");
+
+            var _ = this.DatabaseInstance.FetchQueryData($"SELECT * FROM {this.ExecImageTable.Name} WHERE ID=\'{id}\'",
+                this.ExecImageTable.Name);
+
+            Console.WriteLine(JsonConvert.SerializeObject(_));
+            
+            return _ != null;
         }
 
         public ExecImageBase64 GetImageByID(long id)

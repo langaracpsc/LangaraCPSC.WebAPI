@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Net.Mime;
+using System.Text.Json;
 using Newtonsoft.Json;
 using OpenDatabase;
+using OpenDatabase.Json;
 using OpenDatabaseAPI;
 
 namespace LangaraCPSC.WebAPI
@@ -205,23 +207,43 @@ namespace LangaraCPSC.WebAPI
             return profiles;
         }
 
-        public ExecProfile UpdateExecProfile(Hashtable updateMap)
+        public ExecProfile UpdateExecProfileJson(Hashtable updateMap)
         {
             string[] keys = new string[updateMap.Keys.Count];
             object[] values = new object[updateMap.Values.Count];
 
+            long id = ((JsonElement)updateMap["id"]).GetInt64();
+
+            updateMap.Keys.CopyTo(keys, 0);
+            updateMap.Values.CopyTo(values, 0);
+
+            for (int x = 0; x < values.Length; x++)
+                values[x] = Tools.GetTypedJsonElementValue((JsonElement)values[x]);
+            
+            return (this.DatabaseInstance.UpdateRecord(new Record(new string[]{ "id" }, new object[]{ id }), new Record(keys, values), this.ExecProfileTable.Name)) 
+                                ? this.GetProfileById(id)
+                                : null;
+        }
+
+        public ExecProfile UpdateExecProfile(Hashtable updateMap)
+        {
+            string[] keys = new string[updateMap.Keys.Count];
+            object[] values = new object[updateMap.Values.Count];
+    
             long id = (int)updateMap["id"]; 
             
             updateMap.Keys.CopyTo(keys, 0);
             updateMap.Values.CopyTo(values, 0);
             
-            return (this.DatabaseInstance.UpdateRecord(new Record(new string[]{ "id" }, new object[]{ updateMap["id"]}), new Record(keys, values), this.ExecProfileTable.Name)) ? this.GetProfileById(id) : null; 
+            return (this.DatabaseInstance.UpdateRecord(new Record(new string[]{ "id" }, new object[]{ updateMap["id"]}), new Record(keys, values), this.ExecProfileTable.Name)) 
+                                ? this.GetProfileById(id)
+                                : null;
         }
 
         public bool DeleteProfileWithID(long id)
         {
             if (this.ProfileExists(id))
-                return this.DatabaseInstance.ExecuteQuery($"DELETE FROM {this.ExecProfileTable.Name} WHERE ID=\'{this.ExecProfileTable.Name}\';");
+                return this.DatabaseInstance.ExecuteQuery($"DELETE FROM {this.ExecProfileTable.Name} WHERE ID={id}';");
             
             return false;
         }

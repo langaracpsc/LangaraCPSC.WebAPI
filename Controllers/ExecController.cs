@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.Json;
 using KeyMan;
 using Microsoft.AspNetCore.Mvc;
@@ -147,7 +148,7 @@ namespace LangaraCPSC.WebAPI.Controllers
         }
 
         [HttpPost("Profile/Update")]
-        public async Task<string> UpdateExecProfile([FromHeader] Hashtable request, [FromHeader] string apikey)
+        public async Task<string> UpdateExecProfile([FromBody] Hashtable request, [FromHeader] string apikey)
         {
             return await Task.Run(() =>
             {
@@ -158,7 +159,7 @@ namespace LangaraCPSC.WebAPI.Controllers
 
                 try
                 {
-                    updatedExecProfile = Services.ExecProfileManagerInstance.UpdateExecProfile(request);
+                    updatedExecProfile = Services.ExecProfileManagerInstance.UpdateExecProfileJson(request);
                 }
                 catch (Exception e)
                 {
@@ -215,16 +216,20 @@ namespace LangaraCPSC.WebAPI.Controllers
             return await Task.Run(() =>
             {
                 if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecCreate" }))
-                    return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
+                    return new HttpError(HttpErrorType.Forbidden, "403: Forbidden").ToJson();
            
                 ExecImageBase64 image = null;
 
                 try
                 {
-                    Services.ExecImageManagerInstance.AddExecImage(
-                        (image = new ExecImageBase64(((JsonElement)request["id"]).GetInt64(), request["buffer"].ToString()))
-                        ); 
+                    long id = ((JsonElement)request["id"]).GetInt64();
+                   
+                    image = new ExecImageBase64(id, request["buffer"].ToString(), request["path"].ToString());
 
+                    if (!Services.ExecImageManagerInstance.ExecImageExists(id))
+                        Services.ExecImageManagerInstance.AddExecImage(image);
+                    else
+                        Services.ExecImageManagerInstance.UpdateImage(id, image.Path);
                 } 
                 catch (Exception e)
                 {
