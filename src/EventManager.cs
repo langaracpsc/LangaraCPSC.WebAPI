@@ -244,7 +244,7 @@ namespace LangaraCPSC.WebAPI
            {
                if (item.Recurrence != null && item.Recurrence.Count > 0)
                    return EventRRule.FromRRuleString(item.Recurrence[0]).ToEvents(item)
-                       .Where(e => (DateTime.Parse(e.Start).CompareTo(DateTime.Now) > 0)).FirstOrDefault();
+                       .Where(e => (DateTime.Parse(e.Start).CompareTo(DateTime.Now) >= 0)).FirstOrDefault();
 
                return new Event
                {
