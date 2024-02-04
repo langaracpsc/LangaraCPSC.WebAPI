@@ -24,7 +24,7 @@ namespace LangaraCPSC.WebAPI
         
         public bool SaveToFile()
         {
-            return FileIO.WriteBytesToFile(Convert.FromBase64String(this.Buffer), $"{this.ID}.png");
+            return FileIO.WriteBytesToFile(Convert.FromBase64String(this.Buffer), this.Path);
         }
 
         public static ExecImageBase64 LoadFromFile(string file)
@@ -57,6 +57,7 @@ namespace LangaraCPSC.WebAPI
 
             imageMap.Add("ID", this.ID);
             imageMap.Add("Buffer", this.Buffer);
+            
 
             return JsonConvert.SerializeObject(imageMap);
         }
@@ -91,9 +92,9 @@ namespace LangaraCPSC.WebAPI
         protected Dictionary<long, ExecImageBase64> ExecImageMap;
 
         protected Table ExecImageTable;
-
+        
         public string ImageDir;
-
+        
         public static Table GetTableSchema(string tableName)
         {
             return new Table(tableName, new Field[]
