@@ -5,10 +5,12 @@ using Google.Apis.Drive.v3;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
+using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.VisualBasic.CompilerServices;
 using Calendar = Ical.Net.Calendar;
 
 namespace LangaraCPSC.WebAPI
@@ -25,7 +27,74 @@ namespace LangaraCPSC.WebAPI
             this.Apple = apple;
         }
     }
-    
+
+    public class ICalUtils
+    {
+        public static string GenerateICalFilename(Event e, string outputDir, EventRRule? rrule = null)
+        {
+            CalendarEvent cEvent = new CalendarEvent
+            {
+                Summary = e.Title ?? "Unknown",
+                Description = e.Description ?? "No description",  
+                Start = new CalDateTime(e.Start), 
+                End = new CalDateTime(e.End),
+                Location = e.Location,
+                RecurrenceRules = (rrule != null) ? new [] { rrule.ToIcalRecurrencePattern() } : null
+            };
+            
+            string path = $"{outputDir}/{cEvent.Summary.Replace(' ', '_').Replace('/', '-')}.ics";
+            
+            if (!File.Exists(path))
+                using (StreamWriter writer = new StreamWriter(path))
+                {
+                    Calendar calendar = new Calendar();
+                    
+                    calendar.Version = "2.0";
+                    calendar.Events.Add(cEvent);
+                    
+                    writer.Write(new CalendarSerializer().SerializeToString(calendar));
+                    writer.Flush();
+                }
+            
+            return path;
+        }
+        
+        public static string GenerateICalFilename(Google.Apis.Calendar.v3.Data.Event e, string outputDir, EventRRule? rrule = null)
+        {
+            CalendarEvent cEvent = new CalendarEvent
+            {
+                Summary = e.Summary ?? "Unknown",
+                Description = e.Description ?? "No description",  
+                Start = new CalDateTime(DateTime.Parse((e.Start != null && e.Start?.DateTimeRaw != null) ? e.Start.DateTimeRaw : new DateTime().ToLongDateString())), 
+                End = (e.End != null && e.End.DateTimeRaw != null) ? new CalDateTime(e.End.DateTimeRaw) : null,
+                Location = e.Location,
+                RecurrenceRules = (rrule != null) ? new [] { rrule.ToIcalRecurrencePattern() } : null
+            };
+            
+            string path = $"{outputDir}/{cEvent.Summary.Replace(' ', '_').Replace('/', '-')}.ics";
+            
+            if (!File.Exists(path))
+                using (StreamWriter writer = new StreamWriter(path))
+                {
+                    Calendar calendar = new Calendar();
+                    
+                    calendar.Version = "2.0";
+                    calendar.Events.Add(cEvent);
+                    
+                    writer.Write(new CalendarSerializer().SerializeToString(calendar));
+                    writer.Flush();
+                }
+            
+            return path;
+        }
+
+
+        public static FileStream GetIcalFileStream(string fileName, string outputDir)
+        {
+            return new FileStream($"{outputDir}/{fileName}", FileMode.Open);
+        }
+    }
+
     public class Event
     {
         public string Title { get; set; }
@@ -103,6 +172,17 @@ namespace LangaraCPSC.WebAPI
             };
         }
 
+        public RecurrencePattern ToIcalRecurrencePattern()
+        {
+            return new RecurrencePattern()
+            {
+                Frequency  = (FrequencyType)FrequencyMap[this.Frequency], 
+                ByDay = this.ByDay.Select(day  => new WeekDay(ByDayMap[day])).ToList(),
+                FirstDayOfWeek = ByDayMap[this.WeekStart],
+                Until = this.Until
+            };
+        }
+
         public List<Event> ToEvents(Google.Apis.Calendar.v3.Data.Event startEvent)
         {
             List<Event> events = new List<Event>();
@@ -128,6 +208,7 @@ namespace LangaraCPSC.WebAPI
                         End = new DateTimeOffset(end, TimeZoneInfo.Local.GetUtcOffset(end)).ToString(),
                         Description = startEvent.Description ?? "No description.",
                         Location = startEvent.Location ?? "TBD",
+                        Link = new LinkPair(startEvent.HtmlLink, null)
                     });
                 }
  
@@ -145,7 +226,7 @@ namespace LangaraCPSC.WebAPI
 
         private readonly string CalendarID;
 
-        private readonly string CachePath;
+        public readonly string CachePath;
 
         private readonly string ImagePath;
         
@@ -184,6 +265,8 @@ namespace LangaraCPSC.WebAPI
 
             string path = $"{this.ImagePath}/{fileId}.{extension}";
 
+            Console.WriteLine($"Fetching path {path}");
+
             if (!File.Exists(path))
             {
                 MemoryStream stream = new MemoryStream();
@@ -198,38 +281,6 @@ namespace LangaraCPSC.WebAPI
             return path; 
         }
         
-        private string GenerateICalFilename(Google.Apis.Calendar.v3.Data.Event e)
-        {
-            CalendarEvent cEvent = new CalendarEvent
-            {
-                Summary = e.Summary ?? "Unknown",
-                Description = e.Description ?? "No description",  
-                Start = new CalDateTime(DateTime.Parse((e.Start != null && e.Start?.DateTimeRaw != null) ? e.Start.DateTimeRaw : new DateTime().ToLongDateString())), 
-                End = (e.End != null && e.End.DateTimeRaw != null) ? new CalDateTime(e.End.DateTimeRaw) : null,
-                Location = e.Location 
-            };
-            
-            string path = $"{this.CachePath}/{cEvent.Summary.Replace(' ', '_').Replace('/', '-')}.ics";
-            
-            if (!File.Exists(path))
-                using (StreamWriter writer = new StreamWriter(path))
-                {
-                    Calendar calendar = new Calendar();
-                    
-                    calendar.Version = "2.0";
-                    calendar.Events.Add(cEvent);
-                    
-                    writer.Write(new CalendarSerializer().SerializeToString(calendar));
-                    writer.Flush();
-                }
-            
-            return path;
-        }
-
-        public FileStream GetIcalFileStream(string fileName)
-        {
-            return new FileStream($"{this.CachePath}/{fileName}", FileMode.Open);
-        }
 
         public List<Event> GetEvents()
         {
@@ -237,14 +288,24 @@ namespace LangaraCPSC.WebAPI
 
             var items = this._CalendarService.Events.List(this.CalendarID).Execute().Items ??
                         new List<Google.Apis.Calendar.v3.Data.Event>();
-
+            
             List<Event> events = new List<Event>();
             
            return items.Where(item => item != null && item.Summary != null).Select(item =>
            {
                if (item.Recurrence != null && item.Recurrence.Count > 0)
-                   return EventRRule.FromRRuleString(item.Recurrence[0]).ToEvents(item)
-                       .Where(e => (DateTime.Parse(e.Start).CompareTo(DateTime.Now) >= 0)).FirstOrDefault();
+               {
+                    EventRRule rrule;
+
+                    Event e = (rrule = EventRRule.FromRRuleString(item.Recurrence[0]))
+                        .ToEvents(item)
+                        .Where(e => (DateTime.Parse(e.Start).CompareTo(DateTime.Now) >= 0))
+                        .FirstOrDefault();
+                    
+                    e.Link = new LinkPair($"{item.HtmlLink}&recur={item.Recurrence[0]}", ICalUtils.GenerateICalFilename(e, this.CachePath, rrule));
+
+                    return e;
+               }
 
                return new Event
                {
@@ -256,7 +317,7 @@ namespace LangaraCPSC.WebAPI
                    Image = ((item.Attachments == null || item.Attachments.Count < 1)
                        ? null
                        : this.FetchFile((item.Attachments.Count > 1) ? item.Attachments[0].FileId : null, "png")),
-                   Link = new LinkPair(item.HtmlLink ?? null, this.GenerateICalFilename(item) ?? null)
+                   Link = new LinkPair(item.HtmlLink, ICalUtils.GenerateICalFilename(item, this.CachePath))
                };
            }).ToList();
         }
@@ -291,9 +352,9 @@ namespace LangaraCPSC.WebAPI
             if (!Directory.Exists(this.CachePath))
                 Directory.CreateDirectory(this.CachePath);
             
-            // this.Credential = GoogleCredential.FromFile("keyfile_conf.json").CreateScoped(CalendarService.Scope.Calendar, DriveService.Scope.Drive, DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly).UnderlyingCredential as ServiceAccountCredential;
+            this.Credential = GoogleCredential.FromFile("keyfile_conf.json").CreateScoped(CalendarService.Scope.Calendar, DriveService.Scope.Drive, DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly).UnderlyingCredential as ServiceAccountCredential;
   
-            this.Credential = GoogleCredential.FromJson(EventManager.GetCalendarConfig().ToJsonString()).CreateScoped(CalendarService.Scope.Calendar, DriveService.Scope.Drive, DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly).UnderlyingCredential as ServiceAccountCredential;
+            // this.Credential = GoogleCredential.FromJson(EventManager.GetCalendarConfig().ToJsonString()).CreateScoped(CalendarService.Scope.Calendar, DriveService.Scope.Drive, DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly).UnderlyingCredential as ServiceAccountCredential;
 
             this._CalendarService = new CalendarService(new BaseClientService.Initializer()
             {

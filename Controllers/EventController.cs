@@ -18,8 +18,8 @@ namespace LangaraCPSC.WebAPI.Controllers
         [HttpGet("ICal/{fileName}")]
         public async Task<IActionResult> GetIcal([FromRoute] string fileName)
         {
-            return await Task.Run(() => new FileStreamResult(Services.EventManagerInstance.GetIcalFileStream(fileName),
-                    "application/octet-stream") { FileDownloadName = fileName }
+            return await Task.Run(() => new FileStreamResult(ICalUtils.GetIcalFileStream(fileName, Services.EventManagerInstance.CachePath),
+                    "application/octet-stream") { FileDownloadName = fileName } 
             );
         }
         
