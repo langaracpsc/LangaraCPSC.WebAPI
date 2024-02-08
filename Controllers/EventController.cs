@@ -15,6 +15,12 @@ namespace LangaraCPSC.WebAPI.Controllers
             return await Task.Run(() => new HttpObject(HttpReturnType.Success, Services.EventManagerInstance.GetEvents()).ToJson());
         }
 
+        [HttpGet("Calendar")]
+        public async Task<ActionResult<string>> GetCalendarInviteLink()
+        {
+            return await Task.Run( () => Services.EventManagerInstance.InviteLink); 
+        }
+
         [HttpGet("ICal/{fileName}")]
         public async Task<IActionResult> GetIcal([FromRoute] string fileName)
         {

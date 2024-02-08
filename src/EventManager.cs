@@ -232,6 +232,14 @@ namespace LangaraCPSC.WebAPI
         
         private Dictionary<string, string> FileCache;
 
+        public string InviteLink
+        {
+            get => _InviteLink;
+            private set { } 
+        }
+
+        private string _InviteLink;
+
         private string GetFileBase64(string? fileId)
         {
             if (fileId == null)
@@ -280,7 +288,11 @@ namespace LangaraCPSC.WebAPI
             
             return path; 
         }
-        
+
+        public string GenerateCalendarInvite()
+        {
+            return this._InviteLink = $"https://calendar.google.com/calendar?cid={this.CalendarID}";
+        }
 
         public List<Event> GetEvents()
         {
@@ -301,7 +313,7 @@ namespace LangaraCPSC.WebAPI
                         .ToEvents(item)
                         .Where(e => (DateTime.Parse(e.Start).CompareTo(DateTime.Now) >= 0))
                         .FirstOrDefault();
-                    
+
                     e.Link = new LinkPair($"{item.HtmlLink}&recur={item.Recurrence[0]}", ICalUtils.GenerateICalFilename(e, this.CachePath, rrule));
 
                     return e;
@@ -353,7 +365,7 @@ namespace LangaraCPSC.WebAPI
                 Directory.CreateDirectory(this.CachePath);
             
             // this.Credential = GoogleCredential.FromFile("keyfile_conf.json").CreateScoped(CalendarService.Scope.Calendar, DriveService.Scope.Drive, DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly).UnderlyingCredential as ServiceAccountCredential;
-  
+
             this.Credential = GoogleCredential.FromJson(EventManager.GetCalendarConfig().ToJsonString()).CreateScoped(CalendarService.Scope.Calendar, DriveService.Scope.Drive, DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly).UnderlyingCredential as ServiceAccountCredential;
 
             this._CalendarService = new CalendarService(new BaseClientService.Initializer()
@@ -367,6 +379,8 @@ namespace LangaraCPSC.WebAPI
                 HttpClientInitializer = this.Credential,
                 ApplicationName = "LangaraCPSC.WebAPI"
             });
+            
+            this.GenerateCalendarInvite();
         }
     }
 }
