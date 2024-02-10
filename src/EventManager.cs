@@ -315,7 +315,7 @@ namespace LangaraCPSC.WebAPI
                         .FirstOrDefault();
 
                     e.Link = new LinkPair($"{item.HtmlLink}&recur={item.Recurrence[0]}", ICalUtils.GenerateICalFilename(e, this.CachePath, rrule));
-
+                    
                     return e;
                }
 

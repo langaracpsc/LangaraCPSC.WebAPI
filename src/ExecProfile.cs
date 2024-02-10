@@ -216,7 +216,7 @@ namespace LangaraCPSC.WebAPI
 
             updateMap.Keys.CopyTo(keys, 0);
             updateMap.Values.CopyTo(values, 0);
-
+ 
             for (int x = 0; x < values.Length; x++)
                 values[x] = Tools.GetTypedJsonElementValue((JsonElement)values[x]);
             
