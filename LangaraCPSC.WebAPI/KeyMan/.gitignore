@@ -1,0 +1,4 @@
+obj/
+bin/
+DatabaseConfig.json
+.idea/

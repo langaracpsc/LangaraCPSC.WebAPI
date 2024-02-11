@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LangaraCPSC.WebAPI", "LangaraCPSC.WebAPI\LangaraCPSC.WebAPI.csproj", "{2DC24284-7BED-4342-866C-1B2C2C5C7028}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LangaraCPSC.WebAPI.Tests", "LangaraCPSC.WebAPI.Tests\LangaraCPSC.WebAPI.Tests.csproj", "{870E4FCD-25E4-441D-AD10-379B87F8647D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2DC24284-7BED-4342-866C-1B2C2C5C7028}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DC24284-7BED-4342-866C-1B2C2C5C7028}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DC24284-7BED-4342-866C-1B2C2C5C7028}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DC24284-7BED-4342-866C-1B2C2C5C7028}.Release|Any CPU.Build.0 = Release|Any CPU
+		{870E4FCD-25E4-441D-AD10-379B87F8647D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{870E4FCD-25E4-441D-AD10-379B87F8647D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{870E4FCD-25E4-441D-AD10-379B87F8647D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{870E4FCD-25E4-441D-AD10-379B87F8647D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

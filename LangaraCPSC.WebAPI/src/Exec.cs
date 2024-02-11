@@ -1,15 +1,5 @@
-using System.Collections;
-using System.Diagnostics;
-using System.Net.Mail;
-using Google.Apis.Util;
-using Ical.Net.Serialization;
 using LangaraCPSC.WebAPI.DbModels;
-using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Connections;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using OpenDatabase;
-using OpenDatabaseAPI;
 
 namespace LangaraCPSC.WebAPI
 {
@@ -64,7 +54,7 @@ namespace LangaraCPSC.WebAPI
     /// <summary>
     /// Stores info about an Exec
     /// </summary>
-    public class Exec : IRecord, IPayload
+    public class Exec : IPayload
     {
         public long ID { get; set; }
 
@@ -75,27 +65,6 @@ namespace LangaraCPSC.WebAPI
         public string Email { get; set; }
 
         public ExecTenure Tenure { get; set; }
-
-        public Record ToRecord() 
-        {
-            return new Record(new string[] {
-                "ID",
-                "FirstName",
-                "LastName",
-                "Email",
-                "Position",
-                "TenureStart",
-                "TenureEnd"
-            }, new object[] {
-                this.ID,
-                this.Name.FirstName,
-                this.Name.LastName,
-                this.Email,
-                (int)this.Position,
-                this.Tenure.Start.ToString(), 
-                (this.Tenure.End == new DateTime()) ? null : this.Tenure.End.ToString()
-            });
-        }
         
         public static Exec FromModel(DbModels.Exec model)
         {
@@ -138,11 +107,7 @@ namespace LangaraCPSC.WebAPI
 
     public class ExecManager : IExecManager
     {
-        public PostGRESDatabase DatabaseConnection;
-
         public string ExecTableName;
-        
-        protected Table ExecTable;
 
         public Dictionary<long, DbModels.Exec> ExecMap;
 
@@ -245,17 +210,6 @@ namespace LangaraCPSC.WebAPI
             this._DbContext.Database.EnsureCreated();
             
             this.ExecMap = new Dictionary<long, DbModels.Exec>();
-            
-            this.ExecTable = new Table(this.ExecTableName, new Field[]
-            {
-                new Field("ID", FieldType.Int, new Flag[] { Flag.PrimaryKey, Flag.NotNull }),
-                new Field("FirstName", FieldType.VarChar, new Flag[] { Flag.NotNull }, 64),
-                new Field("LastName", FieldType.VarChar, new Flag[] { }, 64),
-                new Field("Email", FieldType.VarChar, new Flag[] { Flag.NotNull }, 64),
-                new Field("Position", FieldType.Int, new Flag[] { Flag.NotNull }),
-                new Field("TenureStart", FieldType.VarChar, new Flag[] { Flag.NotNull }, 64),
-                new Field("TenureEnd", FieldType.VarChar, new Flag[] { }, 64)
-            });
         }
     }
 } 

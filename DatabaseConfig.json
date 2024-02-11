@@ -1,8 +1,0 @@
-{
-    "_comment": "DO NOT USE THIS FILE IN PRODUCTION; THIS IS A TEMPORARY FILE FOR DEVELOPMENT PURPOSES",
-    "HostName": "postgres_image",
-    "DatabaseName": "postgres",
-    "UserID": "postgres",
-    "Password": "password",
-    "Client": "PostGRES"
-}
