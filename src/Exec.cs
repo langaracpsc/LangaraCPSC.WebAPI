@@ -1,6 +1,12 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Net.Mail;
+using Google.Apis.Util;
+using Ical.Net.Serialization;
+using LangaraCPSC.WebAPI.DbModels;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using OpenDatabase;
 using OpenDatabaseAPI;
@@ -91,14 +97,15 @@ namespace LangaraCPSC.WebAPI
             });
         }
         
-        public static Exec FromRecord(Record record)
+        public static Exec FromModel(DbModels.Exec model)
         {
-           return new Exec((int)record.Values[0],
-                    new ExecName(record.Values[1].ToString(), record.Values[2].ToString()),
-                    record.Values[3].ToString(),
-                    (ExecPosition)((int)record.Values[4]),
-                    new ExecTenure(DateTime.Parse(record.Values[5].ToString()), 
-                    ((record.Values[6] == null || record.Values[6] == "")) ? new DateTime() : DateTime.Parse(record.Values[6].ToString())));
+            Console.WriteLine(JsonConvert.SerializeObject(model));
+            
+            return new Exec(model.Id,
+                new ExecName { FirstName = model.Firstname, LastName = model.Lastname },
+                model.Email,
+                (ExecPosition)model.Position,
+                new ExecTenure { Start = DateTime.Parse(model.Tenurestart), End = (model.Tenureend == null) ? new DateTime() : DateTime.Parse(model.Tenureend) });
         }
 
         public string ToJson()
@@ -116,7 +123,20 @@ namespace LangaraCPSC.WebAPI
         }
     }
 
-    public class ExecManager
+    public interface IExecManager
+    {
+        Exec CreateExec(long studentID, ExecName name, string email, ExecPosition position, ExecTenure tenure);
+
+        void EndTenure(long id);
+
+        List<Exec> GetExecs();
+
+        Exec? GetExec(long id);
+        
+        Exec UpdateExec(DbModels.Exec updateModel);
+    }
+
+    public class ExecManager : IExecManager
     {
         public PostGRESDatabase DatabaseConnection;
 
@@ -124,8 +144,10 @@ namespace LangaraCPSC.WebAPI
         
         protected Table ExecTable;
 
-        public Dictionary<long, Exec> ExecMap;
+        public Dictionary<long, DbModels.Exec> ExecMap;
 
+        private readonly LCSDBContext _DbContext;
+        
         protected static string[] ValidKeys = new string[] { 
             "ID",
             "FirstName",
@@ -138,65 +160,43 @@ namespace LangaraCPSC.WebAPI
         
         public Exec CreateExec(long studentID, ExecName name, string email, ExecPosition position, ExecTenure tenure)
         {
-            Exec exec;
+            DbModels.Exec exec;
+    
+            this._DbContext.Execs.Add(exec = new DbModels.Exec
+            {
+                Id = (int)studentID,
+            });
+            
+            this._DbContext.SaveChanges();
+            
+            this.ExecMap.Add(exec.Id, exec);
 
-            this.DatabaseConnection.InsertRecord((exec = new Exec(studentID, name, email, position, tenure)).ToRecord(), this.ExecTableName);
-            this.ExecMap.Add(exec.ID, exec);
-
-            return exec;
+            return new Exec(studentID, name, email, position, tenure);
         }
 
         public void EndTenure(long id)
         {
-            Record[] records =
-                this.DatabaseConnection.FetchQueryData($"SELECT * FROM {this.ExecTableName} WHERE ID={id}",
-                    this.ExecTableName);
-
-            if (records.Length < 1)
+            DbModels.Exec? exec = this._DbContext.Execs.Where(e => e.Id == id).FirstOrDefault();
+            
+            if (exec == null)  
                 throw new Exception($"Exec with ID \"{id}\" not found.");
 
-            Exec exec = Exec.FromRecord(records[0]);
+            if (DateTime.Parse(exec.Tenureend) == new DateTime())
+                exec.Tenureend = DateTime.Now.ToString();
 
-            if (exec.Tenure.End == new DateTime())
-                exec.Tenure = new ExecTenure(exec.Tenure.Start, DateTime.Now);
-            
-            this.DatabaseConnection.UpdateRecord(new Record(new string[] { "ID" }, new object[] { id }),
-                exec.ToRecord(), this.ExecTableName);
+            this._DbContext.SaveChanges();
         }
-
-        /// <summary>
-        /// Checks and creates the the exec table if it doesnt exist
-        /// </summary>
-        public void AssertTable()
-        {
-            bool b;
-            
-            if (!(b = this.DatabaseConnection.TableExists(this.ExecTableName)))
-                this.DatabaseConnection.ExecuteQuery(this.ExecTable.GetCreateQuery());
-
-            Console.WriteLine(b);
-        }
-
+        
         public List<Exec> GetExecs()
         {
-            List<Exec> execs = new List<Exec>();
-
-            Record[] fetchedRecords = this.DatabaseConnection.FetchQueryData($"SELECT * FROM {this.ExecTableName}", this.ExecTableName);
-
-            for (int x = 0; x < fetchedRecords.Length; x++)
-                execs.Add(Exec.FromRecord(fetchedRecords[x]));
-
-            return execs;
+            return this._DbContext.Execs.Select(e => Exec.FromModel(e)).ToList();
         }
 
-        public Exec GetExec(long id)
+        public Exec? GetExec(long id)
         {
-            Record[] records = this.DatabaseConnection.FetchQueryData($"SELECT * FROM {this.ExecTable.Name} WHERE ID={id}", this.ExecTable.Name);
+            DbModels.Exec? exec = this._DbContext.Execs.Where(e => e.Id == id).FirstOrDefault();
 
-            if (records.Length == 0)
-                return null;
-
-            return Exec.FromRecord(records[0]);
+            return (exec != null) ? Exec.FromModel(exec) : null;
         }
 
 
@@ -208,43 +208,54 @@ namespace LangaraCPSC.WebAPI
             return true;
         }
 
-        public Exec UpdateExec(Hashtable updateMap)
+        public Exec? UpdateExec(DbModels.Exec updateModel)
         {
-            string[] keys = new string[updateMap.Keys.Count];
-            object[] values = new object[updateMap.Values.Count];
+            DbModels.Exec? exec;
 
-            long id;
-            
-            updateMap.Values.CopyTo(values, 0);
-            updateMap.Keys.CopyTo(keys,0);
+            try
+            {
+                if (updateModel.Id == null || updateModel.Id == 0)
+                    throw new NullReferenceException();
+                
+                exec = this._DbContext.Execs.Where(e => e.Id == updateModel.Id).FirstOrDefault();
 
-            foreach (string key in keys)
-                if (!ExecManager.IsKeyValid(key))
-                    return null;
+                if (exec == null)
+                    throw new Exception($"Exec with id {updateModel.Id} not found");
+            }
+            catch (NullReferenceException e)
+            {
+                Console.WriteLine("id not provided for the record to update.");
+                throw;
+            }
+
+            exec.Firstname = updateModel.Firstname ?? exec.Firstname;
+            exec.Lastname = updateModel.Lastname ?? exec.Lastname;
+            exec.Position = updateModel.Position ?? exec.Position;
+            exec.Tenurestart = updateModel.Tenurestart ?? exec.Tenurestart;
+            exec.Tenureend = updateModel.Tenureend ?? exec.Tenureend;
+            exec.Email = updateModel.Email ?? exec.Email;
             
-            return (this.DatabaseConnection.UpdateRecord(new Record(new string[]{ "ID" }, new object[]{ id = (long)updateMap["ID"] }), new Record(keys, values), this.ExecTableName))  
-                    ? this.GetExec(id) : null;
+            return Exec.FromModel(exec);
         }
 
-        public ExecManager(DatabaseConfiguration databaseConfiguration, string execTable = "Execs")
-        {
-            this.DatabaseConnection = new PostGRESDatabase(databaseConfiguration);
-            this.ExecTableName = execTable;
-            this.ExecMap = new Dictionary<long, Exec>();
-            
-            this.DatabaseConnection.Connect();
 
-            this.ExecTable = new Table(this.ExecTableName, new Field[] {
-                new Field("ID", FieldType.Int, new Flag[]{ Flag.PrimaryKey, Flag.NotNull }),
+        public ExecManager(LCSDBContext dbContext)
+        {
+            this._DbContext = dbContext;
+            this._DbContext.Database.EnsureCreated();
+            
+            this.ExecMap = new Dictionary<long, DbModels.Exec>();
+            
+            this.ExecTable = new Table(this.ExecTableName, new Field[]
+            {
+                new Field("ID", FieldType.Int, new Flag[] { Flag.PrimaryKey, Flag.NotNull }),
                 new Field("FirstName", FieldType.VarChar, new Flag[] { Flag.NotNull }, 64),
-                new Field("LastName", FieldType.VarChar, new Flag[] {} , 64),
-                new Field("Email", FieldType.VarChar, new Flag[]{ Flag.NotNull }, 64),
-                new Field("Position", FieldType.Int, new Flag[]{ Flag.NotNull }),
+                new Field("LastName", FieldType.VarChar, new Flag[] { }, 64),
+                new Field("Email", FieldType.VarChar, new Flag[] { Flag.NotNull }, 64),
+                new Field("Position", FieldType.Int, new Flag[] { Flag.NotNull }),
                 new Field("TenureStart", FieldType.VarChar, new Flag[] { Flag.NotNull }, 64),
                 new Field("TenureEnd", FieldType.VarChar, new Flag[] { }, 64)
             });
-            
-            this.AssertTable();
         }
     }
 } 

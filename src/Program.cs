@@ -1,5 +1,6 @@
 using System.Collections;
 using KeyMan;
+using LangaraCPSC.WebAPI.DbModels;
 using Microsoft.Extensions.FileProviders;
 using OpenDatabase;
 using OpenDatabaseAPI;
@@ -19,6 +20,9 @@ namespace LangaraCPSC.WebAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddDbContext<LCSDBContext>();
+            builder.Services.AddScoped<IExecManager, ExecManager>();
+            
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("CORS", policy =>
@@ -48,8 +52,7 @@ namespace LangaraCPSC.WebAPI
             Console.WriteLine(Path.Combine(builder.Environment.ContentRootPath, "Images"));
             
             app.UseAuthorization();
-            app.MapControllers();
-            
+            app.MapControllers(); 
 
             IDictionary environmentVariables = Environment.GetEnvironmentVariables();
 
@@ -82,7 +85,6 @@ namespace LangaraCPSC.WebAPI
 
             APIKeyDBContext dbContext = new APIKeyDBContext();
             
-            Services.ExecManagerInstance = new ExecManager(config);
             Services.ExecImageManagerInstance = new ExecImageManager(config);
             Services.ExecProfileManagerInstance = new ExecProfileManager(config, "ExecProfiles", "Execs", Services.ExecImageManagerInstance);
             Services.APIKeyManagerInstance = new APIKeyManager(dbContext);
@@ -106,7 +108,8 @@ namespace LangaraCPSC.WebAPI
             //     .AddPermission("ExecCreate", true)
             //     .AddPermission("ExecRead", true)
             //     .AddPermission("ExecUpdate", true)
-            //     .GenerateKey());
+            //     .
+            // GenerateKey());
             //
             app.Run();
         }

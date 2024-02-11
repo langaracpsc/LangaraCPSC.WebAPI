@@ -150,8 +150,8 @@ namespace LangaraCPSC.WebAPI
 
             activeExecs = new List<Exec>();
             
-            for (int x = 0; x < records.Length; x++)
-                activeExecs.Add(Exec.FromRecord(records[x]));
+            // for (int x = 0; x < records.Length; x++)
+            //     activeExecs.Add(Exec.FromRecord(records[x]));
 
             return activeExecs;
         }

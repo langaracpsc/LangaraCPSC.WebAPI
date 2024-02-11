@@ -1,11 +1,7 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text.Json;
 using KeyMan;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using OpenDatabase.Json;
 
 namespace LangaraCPSC.WebAPI.Controllers
 {
@@ -13,6 +9,8 @@ namespace LangaraCPSC.WebAPI.Controllers
     [Route("[controller]")]
     public class ExecController : ControllerBase
     {
+        private readonly ExecManager _ExecManager;
+        
         [HttpGet("ListAll")]
         public async Task<string> Get([FromHeader] string apikey)
         {
@@ -21,7 +19,7 @@ namespace LangaraCPSC.WebAPI.Controllers
 
             return await Task.Run(() =>
             {
-                return new HttpObject(HttpReturnType.Success,  Services.ExecManagerInstance.GetExecs()).ToJson();
+                return new HttpObject(HttpReturnType.Success,  this._ExecManager.GetExecs()).ToJson();
             });
         }
 
@@ -123,7 +121,7 @@ namespace LangaraCPSC.WebAPI.Controllers
         }
 
         [HttpPost("Update")]
-        public async Task<string> UpdateExec([FromHeader] Hashtable request, [FromHeader] string apikey)
+        public async Task<string> UpdateExec([FromHeader] DbModels.Exec request, [FromHeader] string apikey)
         {
             APIKey key;
 
@@ -267,8 +265,9 @@ namespace LangaraCPSC.WebAPI.Controllers
             });
         } 
 
-        public ExecController()
+        public ExecController(IExecManager execManager)
         {
+            this._ExecManager = execManager as ExecManager;
         }
     }
 }  
