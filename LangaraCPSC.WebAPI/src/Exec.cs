@@ -68,13 +68,25 @@ namespace LangaraCPSC.WebAPI
         
         public static Exec FromModel(DbModels.Exec model)
         {
-            Console.WriteLine(JsonConvert.SerializeObject(model));
-            
             return new Exec(model.Id,
                 new ExecName { FirstName = model.Firstname, LastName = model.Lastname },
                 model.Email,
                 (ExecPosition)model.Position,
                 new ExecTenure { Start = DateTime.Parse(model.Tenurestart), End = (model.Tenureend == null) ? new DateTime() : DateTime.Parse(model.Tenureend) });
+        }
+
+        public DbModels.Exec ToModel()
+        {
+            return new DbModels.Exec
+            {
+                Id = (int)this.ID,
+                Firstname = this.Name.FirstName,
+                Lastname = this.Name.LastName,
+                Email = this.Email,
+                Position = (int)this.Position,
+                Tenurestart = this.Tenure.Start.ToString(),
+                Tenureend = this.Tenure.End.ToString()
+            };
         }
 
         public string ToJson()
@@ -109,7 +121,7 @@ namespace LangaraCPSC.WebAPI
     {
         public string ExecTableName;
 
-        public Dictionary<long, DbModels.Exec> ExecMap;
+        public Dictionary<long, Exec> ExecMap;
 
         private readonly LCSDBContext _DbContext;
         
@@ -125,16 +137,13 @@ namespace LangaraCPSC.WebAPI
         
         public Exec CreateExec(long studentID, ExecName name, string email, ExecPosition position, ExecTenure tenure)
         {
-            DbModels.Exec exec;
-    
-            this._DbContext.Execs.Add(exec = new DbModels.Exec
-            {
-                Id = (int)studentID,
-            });
+            Exec exec;
+            
+            this._DbContext.Execs.Add((exec = new Exec(studentID, name, email, position, tenure)).ToModel());
             
             this._DbContext.SaveChanges();
             
-            this.ExecMap.Add(exec.Id, exec);
+            this.ExecMap.Add(exec.ID, exec);
 
             return new Exec(studentID, name, email, position, tenure);
         }
@@ -164,6 +173,21 @@ namespace LangaraCPSC.WebAPI
             return (exec != null) ? Exec.FromModel(exec) : null;
         }
 
+        public bool DeleteExec(long id)
+        {
+            try
+            {
+                this._DbContext.Execs.Remove(this._DbContext.Execs.Where(e => e.Id == id).FirstOrDefault());
+                this._DbContext.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                throw;
+            }
+
+            return true;
+        }
 
         protected static bool IsKeyValid(string key)
         {
@@ -200,6 +224,8 @@ namespace LangaraCPSC.WebAPI
             exec.Tenureend = updateModel.Tenureend ?? exec.Tenureend;
             exec.Email = updateModel.Email ?? exec.Email;
             
+            
+            
             return Exec.FromModel(exec);
         }
 
@@ -209,7 +235,7 @@ namespace LangaraCPSC.WebAPI
             this._DbContext = dbContext;
             this._DbContext.Database.EnsureCreated();
             
-            this.ExecMap = new Dictionary<long, DbModels.Exec>();
+            this.ExecMap = new Dictionary<long, Exec>();
         }
     }
 } 
