@@ -2,7 +2,6 @@ using LangaraCPSC.WebAPI.DbModels;
 
 namespace LangaraCPSC.WebAPI.Tests;
 
-
 public class ExecImageManagerTest
 {
     private readonly LCSDBContext DBContext;
@@ -16,7 +15,7 @@ public class ExecImageManagerTest
         ExecImageBase64? image = null;
         
         Assert.True(this.Manager.AddExecImage(ExecImageBase64.LoadFromFile(path))); // Create
-        Assert.True(this.Manager.ExecImageExists(100000000)); // Read
+        Assert.True(this.Manager.ExecImageExists(100000000)); // Read 
         
         Assert.True(this.Manager.UpdateImage(100000000, "test.png")); // Update
         Assert.Throws<FileNotFoundException>(() => this.Manager.GetImageByID(100000000)); // throws because updated path doesn't exist

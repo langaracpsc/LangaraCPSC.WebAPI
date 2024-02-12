@@ -71,7 +71,22 @@ namespace LangaraCPSC.WebAPI
         }
     }
 
-    public class ExecImageManager
+    public interface IExecImageManager
+    {
+        bool UpdateImage(long id, string path);
+
+        bool AddExecImage(ExecImageBase64 execImage);
+
+        bool ExecImageExists(long id);
+
+        ExecImageBase64 GetImageByID(long id);
+
+        bool LoadImages();
+
+        bool DeleteImage(long id);
+    }
+
+    public class ExecImageManager : IExecImageManager 
     {
         protected Dictionary<long, ExecImageBase64> ExecImageMap;
 
@@ -134,8 +149,6 @@ namespace LangaraCPSC.WebAPI
 
 
             Execimage? imageModel  = this.DBContext.Execimages.FirstOrDefault(e => e.Id == id.ToString());
-    
-            Console.WriteLine(JsonConvert.SerializeObject(imageModel));
             
             if (imageModel == null)
                 throw new Exception($"Image with id {id} not found");

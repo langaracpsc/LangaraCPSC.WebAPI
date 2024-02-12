@@ -7,7 +7,7 @@ public partial class Execprofile
 {
     public int Id { get; set; }
 
-    public string Imageid { get; set; } = null!;
+    public string? Imageid { get; set; } = null!;
 
-    public string Description { get; set; } = null!;
+    public string? Description { get; set; } = null!;
 }

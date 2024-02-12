@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Net.Mime;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
+using LangaraCPSC.WebAPI.DbModels;
 using Newtonsoft.Json;
 
 namespace LangaraCPSC.WebAPI
@@ -28,7 +30,7 @@ namespace LangaraCPSC.WebAPI
 
             return map;
         }
-
+        
         public virtual Hashtable GetComplete(ExecManager manager)
         {
             Hashtable completeMap = this.ToMap(); 
@@ -42,162 +44,26 @@ namespace LangaraCPSC.WebAPI
             return completeMap;
         }
 
+        public static ExecProfile FromModel(Execprofile model)
+        {
+            return new ExecProfile((long)model.Id, model.Imageid, model.Description);
+        }
+
+        public Execprofile ToModel()
+        {
+            return new Execprofile
+            {   
+                Id = (int)this.ID,
+                Imageid = this.ImageID,
+                Description =  this.Description
+            }; 
+        }
+
         public ExecProfile(long id, string imageID, string description)
         {
             this.ID = id;
             this.ImageID = imageID;
             this.Description = description;
-        }
-    }
-
-    public class ExecProfileManager
-    {
-        private Dictionary<long, ExecProfile> ProfileMap;
-
-        private ExecImageManager ImageManager;
-        
-        public string ExecTableName; 
-        
-        public bool ProfileExists(long id)
-        {
-            return false;
-        }
-
-        public ExecProfile CreateProfile(long id, string imageID, string description)
-        {
-            return null;
-        }
-
-        public bool UpdateProfile(long id, string imageID, string description)
-        {
-            if (this.ProfileExists(id))
-            {
-                return true; 
-            }
-
-            return false;
-        }
-
-        public ExecProfile GetProfileById(long id)
-        {
-            if (this.ProfileMap.ContainsKey(id))
-                return this.ProfileMap[id];
-
-            ExecProfile profile = null;
-            
-            return profile;
-        }
-
-        public List<Exec> GetActiveExecs()
-        {
-            List<Exec> activeExecs = null;
-
-            activeExecs = new List<Exec>();
-            
-            // for (int x = 0; x < records.Length; x++)
-            //     activeExecs.Add(Exec.FromRecord(records[x]));
-
-            return activeExecs;
-        }
-
-        public ExecImageProfile GetExecImageProfile(long id)
-        {
-            ExecProfile profile = this.GetProfileById(id);
-
-            if (profile == null)
-                return null;
-
-            return new ExecImageProfile(profile, this.ImageManager.GetImageByID(id).Path);
-        }
-
-        public List<ExecImageProfile> GetActiveImageProfiles()
-        {
-            List<ExecImageProfile> execImageProfiles = new List<ExecImageProfile>();
-
-            List<ExecProfile> activeProfiles = this.GetActiveProfiles();
-            
-            foreach (ExecProfile profile in activeProfiles)
-                execImageProfiles.Add(new ExecImageProfile(profile, this.ImageManager.GetImageByID(profile.ID).Path));
-
-            return execImageProfiles;
-        }
-
-        public List<ExecProfile> GetActiveProfiles()
-        {
-            List<ExecProfile> profiles = new List<ExecProfile>();
-
-            List<Exec> execs = new List<Exec>();
-            if ((execs = this.GetActiveExecs()) == null)
-                return null; 
-            
-            for (int x = 0; x < execs.Count; x++)
-            {
-                // if ((records = this.DatabaseInstance.FetchQueryData(
-                //         $"SELECT * FROM {this.ExecProfileTable.Name} WHERE ID={execs[x].ID}",
-                //         this.ExecProfileTable.Name)) == null)
-                //     continue;
-            }
-            
-            return profiles;
-        }
-
-        public ExecProfile UpdateExecProfileJson(Hashtable updateMap)
-        {
-            string[] keys = new string[updateMap.Keys.Count];
-            object[] values = new object[updateMap.Values.Count];
-
-            long id = ((JsonElement)updateMap["id"]).GetInt64();
-
-            updateMap.Keys.CopyTo(keys, 0);
-            updateMap.Values.CopyTo(values, 0);
- 
-            for (int x = 0; x < values.Length; x++)
-                values[x] = Tools.GetTypedJsonElementValue((JsonElement)values[x]);
-            
-            // return (this.DatabaseInstance.UpdateRecord(new Record(new string[]{ "id" }, new object[]{ id }), new Record(keys, values), this.ExecProfileTable.Name)) 
-            //                     ? this.GetProfileById(id)
-            //                     : null;
-            return null;
-        }
-
-        public ExecProfile UpdateExecProfile(Hashtable updateMap)
-        {
-            string[] keys = new string[updateMap.Keys.Count];
-            object[] values = new object[updateMap.Values.Count];
-    
-            long id = (int)updateMap["id"]; 
-            
-            updateMap.Keys.CopyTo(keys, 0);
-            updateMap.Values.CopyTo(values, 0);
-            
-            // return (this.DatabaseInstance.UpdateRecord(new Record(new string[]{ "id" }, new object[]{ updateMap["id"]}), new Record(keys, values), this.ExecProfileTable.Name)) 
-                                // ? this.GetProfileById(id)
-                                // : null;
-            return null; 
-        }
-
-        public bool DeleteProfileWithID(long id)
-        {
-            // if (this.ProfileExists(id))
-            //     return this.DatabaseInstance.ExecuteQuery($"DELETE FROM {this.ExecProfileTable.Name} WHERE ID={id}';");
-            
-            return false;
-        }
-
-        private void AssertTable()
-        {
-            // if (!this.DatabaseInstance.TableExists(this.ExecProfileTable.Name))
-            //     this.DatabaseInstance.ExecuteQuery(this.ExecProfileTable.GetCreateQuery());
-        }
-
-        public ExecProfileManager(string tableName = "ExecProfiles", string execTableName = "Execs", ExecImageManager imageManager = null)
-        {
-            this.ProfileMap = new Dictionary<long, ExecProfile>();
-            this.ExecTableName = execTableName; 
-            
-            this.ImageManager = imageManager;
-            
-            this.AssertTable();
         }
     }
 
@@ -227,6 +93,175 @@ namespace LangaraCPSC.WebAPI
         public ExecImageProfile(long id, string imageID, string description, string image) : base(id, imageID, description)
         {
             this.Image = image;
+        }
+    }
+
+    public interface IExecProfileManager
+    {
+        bool ProfileExists(long id);
+       
+        ExecProfile CreateProfile(long id, string imageID, string description);
+
+        bool UpdateProfile(long id, string imageID, string description);
+
+        ExecProfile? GetProfileById(long id);
+
+        List<Exec> GetActiveExecs();
+
+        ExecImageProfile GetExecImageProfile(long id);
+
+        List<ExecImageProfile> GetActiveImageProfiles();
+
+        List<ExecProfile> GetActiveProfiles();
+        
+        bool DeleteProfileWithID(long id);
+    }
+
+    public class ExecProfileManager : IExecProfileManager
+    {
+        private readonly Dictionary<long, ExecProfile> ProfileMap;
+
+        private readonly ExecImageManager ImageManager;
+
+        private readonly LCSDBContext DBContext; 
+        
+        public bool ProfileExists(long id)
+        {
+            return this.DBContext.Execprofiles.FirstOrDefault(e => e.Id ==  id) != null;
+        }
+        
+        public ExecProfile CreateProfile(long id, string imageID, string description)
+        {
+            ExecProfile profile = new ExecProfile(id, imageID, description);
+
+            try
+            {
+                this.DBContext.Execprofiles.Add(profile.ToModel());
+                this.DBContext.SaveChanges();
+
+                this.ProfileMap.Add(profile.ID, profile); 
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
+            return profile;
+        }
+
+        public bool UpdateProfile(long id, string imageID, string description)
+        {
+            Execprofile? profile = this.DBContext.Execprofiles.FirstOrDefault(e => e.Id == id);
+            
+            if (profile == null)
+                throw new Exception($"Profile with id {id} not found.");
+
+            profile.Imageid = imageID;
+            profile.Description = description;
+
+            try
+            {
+                this.DBContext.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            
+            return true;
+        }
+
+        public ExecProfile? GetProfileById(long id)
+        {
+            if (this.ProfileMap.ContainsKey(id))
+                return this.ProfileMap[id];
+
+            Execprofile? profile = this.DBContext.Execprofiles.FirstOrDefault(e => e.Id == id);
+            
+            if (profile == null)
+                throw new Exception($"Profile with id {id} not found.");
+            
+            return ExecProfile.FromModel(profile);
+        }
+
+        public List<Exec> GetActiveExecs()
+        {
+            return this.DBContext.Execs.Where(e => e.Tenureend == null)
+                    .Select(e => Exec.FromModel(e))
+                    .ToList(); 
+        }
+
+        public ExecImageProfile GetExecImageProfile(long id)
+        {
+            ExecProfile? profile = null;
+
+            try
+            {
+                profile = this.GetProfileById(id);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
+            return new ExecImageProfile(profile, this.ImageManager.GetImageByID(id).Path);
+        }
+ 
+        public List<ExecImageProfile> GetActiveImageProfiles()
+        {
+            List<ExecImageProfile> execImageProfiles = new List<ExecImageProfile>();
+
+            List<ExecProfile> activeProfiles = this.GetActiveProfiles();
+            
+            foreach (ExecProfile profile in activeProfiles)
+                execImageProfiles.Add(new ExecImageProfile(profile, this.ImageManager.GetImageByID(profile.ID).Path));
+
+            return execImageProfiles;
+        }
+
+        public List<ExecProfile> GetActiveProfiles()
+        {
+            List<ExecProfile> profiles = new List<ExecProfile>();
+
+            List<Exec> execs = new List<Exec>();
+                
+            if ((execs = this.GetActiveExecs()) == null)
+                return null;
+
+            return this.DBContext.Execprofiles.Where(e => execs.FirstOrDefault(exec => exec.ID == e.Id) != null)
+                                        .Select(e => ExecProfile.FromModel(e))
+                                        .ToList();
+        }
+        
+        public bool DeleteProfileWithID(long id)
+        {
+            Execprofile? profile = this.DBContext.Execprofiles.FirstOrDefault(e => e.Id == id);
+            
+            if (profile == null)
+                throw new Exception($"Profile with id {id} not found.");
+
+            try
+            {
+                this.DBContext.Execprofiles.Remove(profile);
+                this.DBContext.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e); 
+                throw;
+            }
+
+            return true;
+        }
+        
+        public ExecProfileManager(IExecImageManager imageManager, LCSDBContext dbContext, string tableName = "ExecProfiles", string execTableName = "Execs")
+        {
+            this.ProfileMap = new Dictionary<long, ExecProfile>();
+            this.ImageManager = imageManager as ExecImageManager;
+            this.DBContext = dbContext;
         }
     }
 } 

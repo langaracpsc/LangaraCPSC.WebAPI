@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Text.Json;
 using KeyMan;
+using LangaraCPSC.WebAPI.DbModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LangaraCPSC.WebAPI.Controllers
@@ -146,7 +147,7 @@ namespace LangaraCPSC.WebAPI.Controllers
         }
 
         [HttpPost("Profile/Update")]
-        public async Task<string> UpdateExecProfile([FromBody] Hashtable request, [FromHeader] string apikey)
+        public async Task<string> UpdateExecProfile([FromBody] Execprofile request, [FromHeader] string apikey)
         {
             return await Task.Run(() =>
             {
@@ -157,7 +158,9 @@ namespace LangaraCPSC.WebAPI.Controllers
 
                 try
                 {
-                    updatedExecProfile = Services.ExecProfileManagerInstance.UpdateExecProfileJson(request);
+                    Services.ExecProfileManagerInstance.UpdateProfile(request.Id, request.Imageid,request.Description);
+
+                    return new HttpObject(HttpReturnType.Success, Services.ExecProfileManagerInstance.GetProfileById(request.Id)).ToJson();
                 }
                 catch (Exception e)
                 {
