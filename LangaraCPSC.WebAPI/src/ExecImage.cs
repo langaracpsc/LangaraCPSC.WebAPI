@@ -83,7 +83,7 @@ namespace LangaraCPSC.WebAPI
         {
             try
             { 
-                DbModels.Execimage? image = this.DBContext.Execimages.FirstOrDefault(e => long.Parse(e.Id) == id);
+                DbModels.Execimage? image = this.DBContext.Execimages.FirstOrDefault(e => e.Id == id.ToString());
 
                 if (image == null)
                     throw new NullReferenceException();
@@ -124,7 +124,7 @@ namespace LangaraCPSC.WebAPI
 
         public bool ExecImageExists(long id)
         {
-            return (this.DBContext.Execimages.FirstOrDefault(e => long.Parse(e.Id) == id) != null);
+            return (this.DBContext.Execimages.FirstOrDefault(e => e.Id == id.ToString()) != null);
         }
 
         public ExecImageBase64 GetImageByID(long id)
@@ -132,8 +132,11 @@ namespace LangaraCPSC.WebAPI
             if (this.ExecImageMap.ContainsKey(id))
                 return this.ExecImageMap[id];
 
-            Execimage? imageModel  = this.DBContext.Execimages.FirstOrDefault(e => long.Parse(e.Id) == id);
 
+            Execimage? imageModel  = this.DBContext.Execimages.FirstOrDefault(e => e.Id == id.ToString());
+    
+            Console.WriteLine(JsonConvert.SerializeObject(imageModel));
+            
             if (imageModel == null)
                 throw new Exception($"Image with id {id} not found");
 
@@ -170,11 +173,11 @@ namespace LangaraCPSC.WebAPI
         {
             try
             {
-                Execimage? image = this.DBContext.Execimages.FirstOrDefault(e => long.Parse(e.Id) == id);
-
+                Execimage? image = this.DBContext.Execimages.FirstOrDefault(e => e.Id == id.ToString());
+    
                 if (image == null)
                     throw new NullReferenceException();
-
+                
                 this.DBContext.Execimages.Remove(image);
                 this.DBContext.SaveChanges();
             }
@@ -201,5 +204,5 @@ namespace LangaraCPSC.WebAPI
             FileIO.AssertDirectory(this.ImageDir);
         }
     }
-    
 } 
+
