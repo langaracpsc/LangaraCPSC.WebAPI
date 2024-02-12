@@ -1,6 +1,3 @@
-[submodule "opendatabaseapi"]
-	path = opendatabaseapi
-	url = https://github.com/rishit-singh/opendatabaseapi
 [submodule "KeyMan"]
-	path = KeyMan
+	path = LangaraCPSC.WebAPI/KeyMan
 	url = https://github.com/rishit-singh/KeyMan

@@ -1,7 +1,11 @@
 using System.Collections;
+using System.Net.Mime;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
+using System.Text.Json.Nodes;
+using LangaraCPSC.WebAPI.DbModels;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace LangaraCPSC.WebAPI
@@ -26,20 +30,36 @@ namespace LangaraCPSC.WebAPI
 
         public static ExecImageBase64 LoadFromFile(string file)
         {
-            string[] split = file.Split('/'), split1;
+            string[] split = file.Split('/');
 
-            return new ExecImageBase64(int.Parse((split1 = split[split.Length - 1].Split('.'))[0]), Convert.ToBase64String(FileIO.ReadBytesFromFile(file)));
+            return new ExecImageBase64(int.Parse((split[^1].Split('.'))[0]), Convert.ToBase64String(FileIO.ReadBytesFromFile(file)));
+        }
+
+        public static ExecImageBase64 FromModel(DbModels.Execimage image, string? imageDir = null)
+        {
+            if (imageDir != null) 
+                return ExecImageBase64.LoadFromFile($"{imageDir}/{image.Path}");
+
+            return new ExecImageBase64(long.Parse(image.Id), null, image.Path);
+        }
+        
+        public DbModels.Execimage ToModel()
+        {
+            return new DbModels.Execimage()
+            {
+                Id = this.ID.ToString(),
+                Path  = this.Path
+            };
         }
 
         public string ToJson()
         {
-            Hashtable imageMap = new Hashtable();
+            JsonObject json = new JsonObject();
+           
+            json.Add(new KeyValuePair<string, JsonNode?>("ID", this.ID));
+            json.Add(new KeyValuePair<string, JsonNode?>("Buffer", this.Buffer));
 
-            imageMap.Add("ID", this.ID);
-            imageMap.Add("Buffer", this.Buffer);
-            
-
-            return JsonConvert.SerializeObject(imageMap);
+            return json.ToString();
         }
         
         public ExecImageBase64(long id, string buffer, string path = null)
@@ -54,23 +74,57 @@ namespace LangaraCPSC.WebAPI
     public class ExecImageManager
     {
         protected Dictionary<long, ExecImageBase64> ExecImageMap;
-        
+
+        private readonly LCSDBContext DBContext;
+            
         public string ImageDir;
         
-
         public bool UpdateImage(long id, string path)
         {
-            return false;
+            try
+            { 
+                DbModels.Execimage? image = this.DBContext.Execimages.FirstOrDefault(e => long.Parse(e.Id) == id);
+
+                if (image == null)
+                    throw new NullReferenceException();
+
+                image.Path = path;
+                
+                this.DBContext.SaveChanges();
+            }
+            catch (NullReferenceException e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            
+            return true;
         }
 
         public bool AddExecImage(ExecImageBase64 execImage)
         {
-            return false;
+            try
+            {
+                this.DBContext.Execimages.Add(execImage.ToModel());
+                this.DBContext.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            
+            return true; 
         }
 
         public bool ExecImageExists(long id)
         {
-            return false;
+            return (this.DBContext.Execimages.FirstOrDefault(e => long.Parse(e.Id) == id) != null);
         }
 
         public ExecImageBase64 GetImageByID(long id)
@@ -78,12 +132,17 @@ namespace LangaraCPSC.WebAPI
             if (this.ExecImageMap.ContainsKey(id))
                 return this.ExecImageMap[id];
 
-            ExecImageBase64 image = null;
+            Execimage? imageModel  = this.DBContext.Execimages.FirstOrDefault(e => long.Parse(e.Id) == id);
 
-            string path = null; // $"{this.ImageDir}/{records[0].Values[1].ToString()}";
+            if (imageModel == null)
+                throw new Exception($"Image with id {id} not found");
+
+            ExecImageBase64 image = ExecImageBase64.FromModel(imageModel);
+
+            string path = $"{this.ImageDir}/{image.Path}";
 
             if (!File.Exists(path))
-                return null; 
+                throw new FileNotFoundException($"Image file {path} not found."); 
             
             this.ExecImageMap.Add((image = ExecImageBase64.LoadFromFile(path)).ID, image);
             
@@ -92,17 +151,14 @@ namespace LangaraCPSC.WebAPI
 
         public bool LoadImages()
         {
-
-            ExecImageBase64 image;
-
             try
             {
-                // for (int x = 0; x < imageRecords.Length; x++)
-                //    this.ExecImageMap.Add((image = ExecImageBase64.FromRecord(imageRecords[x])).ID, image); 
+                foreach (DbModels.Execimage image in this.DBContext.Execimages)
+                    this.ExecImageMap.Add(long.Parse(image.Id), ExecImageBase64.FromModel(image));
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console. WriteLine(e);
                 
                 return false;
             }
@@ -112,12 +168,34 @@ namespace LangaraCPSC.WebAPI
 
         public bool DeleteImage(long id)
         {
-            return false;
+            try
+            {
+                Execimage? image = this.DBContext.Execimages.FirstOrDefault(e => long.Parse(e.Id) == id);
+
+                if (image == null)
+                    throw new NullReferenceException();
+
+                this.DBContext.Execimages.Remove(image);
+                this.DBContext.SaveChanges();
+            }
+            catch (NullReferenceException)
+            {
+                Console.WriteLine($"Image with id {id} not found.");
+                throw; 
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
+            return true;
         }
 
-        public ExecImageManager(string tableName = "ExecImages", string imageDir = "Images")
+        public ExecImageManager(LCSDBContext dbContext, string imageDir = "Images")
         {
             this.ExecImageMap = new Dictionary<long, ExecImageBase64>();
+            this.DBContext = dbContext;
             this.ImageDir = imageDir;
                         
             FileIO.AssertDirectory(this.ImageDir);
