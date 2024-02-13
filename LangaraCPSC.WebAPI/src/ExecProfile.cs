@@ -150,15 +150,15 @@ namespace LangaraCPSC.WebAPI
             return profile;
         }
 
-        public bool UpdateProfile(long id, string imageID, string description)
+        public bool UpdateProfile(long id, string? imageID, string? description)
         {
             Execprofile? profile = this.DBContext.Execprofiles.FirstOrDefault(e => e.Id == id);
             
             if (profile == null)
                 throw new Exception($"Profile with id {id} not found.");
 
-            profile.Imageid = imageID;
-            profile.Description = description;
+            profile.Imageid = imageID ?? profile.Imageid;
+            profile.Description = description ?? profile.Description;
 
             try
             {

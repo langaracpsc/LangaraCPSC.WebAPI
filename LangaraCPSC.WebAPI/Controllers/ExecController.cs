@@ -175,7 +175,7 @@ namespace LangaraCPSC.WebAPI.Controllers
                 {
                     this._ExecProfileManager.UpdateProfile(request.Id, request.Imageid,request.Description);
 
-                    return new HttpObject(HttpReturnType.Success, this._ExecProfileManager.GetProfileById(request.Id)).ToJson();
+                    // return new HttpObject(HttpReturnType.Success, this._ExecProfileManager.GetProfileById(request.Id)).ToJson();
                 }
                 catch (Exception e)
                 {
