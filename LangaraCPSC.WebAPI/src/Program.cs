@@ -18,6 +18,7 @@ builder.Services.AddDbContext<APIKeyDBContext>();
 
 builder.Services.AddScoped<IExecManager, ExecManager>();
 builder.Services.AddScoped<APIKeyManager>();
+builder.Services.AddScoped<IEventManager, EventManager>();
 builder.Services.AddScoped<IExecImageManager, ExecImageManager>();
 builder.Services.AddScoped<IExecProfileManager, ExecProfileManager>();
 

@@ -11,6 +11,7 @@ using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.VisualBasic.CompilerServices;
+using Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Helpers;
 using Calendar = Ical.Net.Calendar;
 
 namespace LangaraCPSC.WebAPI
@@ -216,7 +217,16 @@ namespace LangaraCPSC.WebAPI
         }
     }
 
-    public class EventManager
+    public interface IEventManager
+    {
+        string FetchFile(string? fileId, string extension);
+
+        string GenerateCalendarInvite();
+
+        List<Event> GetEvents();
+    }
+
+    public class EventManager : IEventManager
     {
         private readonly ServiceAccountCredential Credential;
 
@@ -353,9 +363,9 @@ namespace LangaraCPSC.WebAPI
             return config;
         }
         
-        public EventManager(string calendarID, string cachePath = "CalendarEvents", string imagePath = "Images")
+        public EventManager(string cachePath = "CalendarEvents", string imagePath = "Images")
         {
-            this.CalendarID = calendarID;
+            this.CalendarID = Environment.GetEnvironmentVariable("CAL_ID");
             this.CachePath = cachePath;
             this.ImagePath = imagePath;
             
