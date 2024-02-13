@@ -1,7 +1,6 @@
 FROM  --platform=$BUILDPLATFORM  mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY LangaraCPSC.WebAPI/LangaraCPSC.WebAPI.csproj .
-COPY LangaraCPSC.WebAPI/DatabaseConfig.json .
 COPY LangaraCPSC.WebAPI/KeyMan KeyMan
 COPY . .
 

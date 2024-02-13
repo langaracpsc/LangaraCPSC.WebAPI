@@ -47,14 +47,10 @@ app.UseStaticFiles(new StaticFileOptions()
 });
 
 app.UseHttpsRedirection();
-
-Console.WriteLine(Path.Combine(builder.Environment.ContentRootPath, "Images"));
-
 app.UseAuthorization();
 app.MapControllers(); 
 
 IDictionary environmentVariables = Environment.GetEnvironmentVariables();
-
 
 string[] configKeys = new string[] {
     "CAL_ID", "HOSTNAME", "DATABASE", "USERNAME", "PASSWORD", "PORT" 
