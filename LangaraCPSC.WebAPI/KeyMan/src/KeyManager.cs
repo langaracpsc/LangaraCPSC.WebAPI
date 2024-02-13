@@ -266,9 +266,9 @@ namespace KeyMan
                 return true;
             }
 
-            public APIKeyManager(DbContext dbContext, bool load = true, bool autoBackup = false)
+            public APIKeyManager(APIKeyDBContext dbContext, bool load = true, bool autoBackup = false)
             {
-                this._dbContext = dbContext as APIKeyDBContext;
+                this._dbContext = dbContext;
                 
                 this.AutoBackup = autoBackup;
                 

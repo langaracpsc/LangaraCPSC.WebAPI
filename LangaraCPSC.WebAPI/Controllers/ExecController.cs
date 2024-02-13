@@ -11,11 +11,17 @@ namespace LangaraCPSC.WebAPI.Controllers
     public class ExecController : ControllerBase
     {
         private readonly ExecManager _ExecManager;
+
+        private readonly ExecImageManager _ExecImageManager;
+        
+        private readonly ExecProfileManager _ExecProfileManager;
+
+        private readonly APIKeyManager _ApiKeyManager;
         
         [HttpGet("ListAll")]
         public async Task<string> Get([FromHeader] string apikey)
         {
-            if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecRead" }))
+            if (!this._ApiKeyManager.IsValid(apikey, new string[]{ "ExecRead" }))
                 return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();  
 
             return await Task.Run(() =>
@@ -29,13 +35,22 @@ namespace LangaraCPSC.WebAPI.Controllers
         {
             return await Task.Run(() =>
             {
-                if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecRead" }))
+                if (!this._ApiKeyManager.IsValid(apikey, new string[]{ "ExecRead" }))
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();  
                 
-                ExecProfile profile = Services.ExecProfileManagerInstance.GetProfileById(id);
+                
+                ExecProfile profile;
 
-                if ((profile = Services.ExecProfileManagerInstance.GetProfileById(id)) == null)
+                try
+                {
+                    profile = this._ExecProfileManager.GetProfileById(id);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    
                     return new HttpObject(HttpReturnType.Error, $"Exec profile with {id} not found.").ToJson();
+                }
 
                 return new HttpObject(HttpReturnType.Success, profile.ToJson()).ToJson();
             });
@@ -46,14 +61,14 @@ namespace LangaraCPSC.WebAPI.Controllers
         {
             return await Task.Run(() =>
             {
-                if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecCreate" }))
+                if (!this._ApiKeyManager.IsValid(apikey, new string[]{ "ExecCreate" }))
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();  
                 
                 Exec exec;
 
                 try
                 {
-                    if ((exec = Services.ExecManagerInstance.CreateExec(((JsonElement)request["studentid"]).GetInt64(), 
+                    if ((exec = this._ExecManager.CreateExec(((JsonElement)request["studentid"]).GetInt64(),
                             new ExecName(request["firstname"].ToString(), request["lastname"].ToString()),
                             request["email"].ToString(),
                             (ExecPosition)((JsonElement)request["position"]).GetInt64(), new ExecTenure(DateTime.Now))) == null)
@@ -73,14 +88,14 @@ namespace LangaraCPSC.WebAPI.Controllers
         {
             return await Task.Run(() =>
             {
-                if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecCreate" }))
+                if (!this._ApiKeyManager.IsValid(apikey, new string[]{ "ExecCreate" }))
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();  
 
                 ExecProfile execProfile = null;
                 
                 try
                 {
-                    if ((execProfile = Services.ExecProfileManagerInstance.CreateProfile(((JsonElement)request["studentid"]).GetInt64(),request["imageid"].ToString(), request["description"].ToString())) == null) 
+                    if ((execProfile = this._ExecProfileManager.CreateProfile(((JsonElement)request["studentid"]).GetInt64(),request["imageid"].ToString(), request["description"].ToString())) == null) 
                         return new HttpError(HttpErrorType.InvalidParamatersError, "Failed to create exec profile.").ToJson();
         
                 }
@@ -100,7 +115,7 @@ namespace LangaraCPSC.WebAPI.Controllers
             { 
                 long id;
                 
-                if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecEnd" }))
+                if (!this._ApiKeyManager.IsValid(apikey, new string[]{ "ExecEnd" }))
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
                 
                 if (!request.ContainsKey("studentid"))
@@ -110,7 +125,7 @@ namespace LangaraCPSC.WebAPI.Controllers
 
                 try
                 {
-                    Services.ExecManagerInstance.EndTenure(id = ((JsonElement)request["studentid"]).GetInt64());
+                    this._ExecManager.EndTenure(id = ((JsonElement)request["studentid"]).GetInt64());
                 }
                 catch (Exception e)
                 {
@@ -128,14 +143,14 @@ namespace LangaraCPSC.WebAPI.Controllers
 
             return await Task.Run(() =>
             {
-                if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecUpdate" }))
+                if (!this._ApiKeyManager.IsValid(apikey, new string[]{ "ExecUpdate" }))
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
 
                 Exec updatedExec = null;
                 
                 try
                 {
-                    updatedExec = Services.ExecManagerInstance.UpdateExec(request);
+                    updatedExec = this._ExecManager.UpdateExec(request);
                 }
                 catch (Exception e)
                 {
@@ -151,16 +166,16 @@ namespace LangaraCPSC.WebAPI.Controllers
         {
             return await Task.Run(() =>
             {
-                if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecUpdate" }))
+                if (!this._ApiKeyManager.IsValid(apikey, new string[]{ "ExecUpdate" }))
                         return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
                 
                 ExecProfile updatedExecProfile = null;
 
                 try
                 {
-                    Services.ExecProfileManagerInstance.UpdateProfile(request.Id, request.Imageid,request.Description);
+                    this._ExecProfileManager.UpdateProfile(request.Id, request.Imageid,request.Description);
 
-                    return new HttpObject(HttpReturnType.Success, Services.ExecProfileManagerInstance.GetProfileById(request.Id)).ToJson();
+                    return new HttpObject(HttpReturnType.Success, this._ExecProfileManager.GetProfileById(request.Id)).ToJson();
                 }
                 catch (Exception e)
                 {
@@ -178,17 +193,17 @@ namespace LangaraCPSC.WebAPI.Controllers
 
             return await Task.Run(() =>
             {
-                if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecRead" }))
+                if (!this._ApiKeyManager.IsValid(apikey, new string[]{ "ExecRead" }))
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();
 
                 List<Hashtable> completeProfileMaps = new List<Hashtable>();
                 
                 if (complete && image)
                 {
-                    List<ExecImageProfile> execProfiles = Services.ExecProfileManagerInstance.GetActiveImageProfiles();
+                    List<ExecImageProfile> execProfiles = this._ExecProfileManager.GetActiveImageProfiles();
                     
                     foreach (ExecImageProfile profile in execProfiles)
-                        completeProfileMaps.Add(profile.GetComplete(Services.ExecManagerInstance));
+                        completeProfileMaps.Add(profile.GetComplete(this._ExecManager));
                     
                     return new HttpObject(HttpReturnType.Success, completeProfileMaps).ToJson();
                 }
@@ -196,18 +211,18 @@ namespace LangaraCPSC.WebAPI.Controllers
                 if (complete)
                 { 
 
-                    List<ExecProfile> execProfiles = Services.ExecProfileManagerInstance.GetActiveProfiles();
+                    List<ExecProfile> execProfiles = this._ExecProfileManager.GetActiveProfiles();
 
                     foreach (ExecProfile profile in execProfiles)
-                        completeProfileMaps.Add(profile.GetComplete(Services.ExecManagerInstance));
+                        completeProfileMaps.Add(profile.GetComplete(this._ExecManager));
                     
                     return new HttpObject(HttpReturnType.Success, completeProfileMaps).ToJson();
                 }
                 
                 
                 return new HttpObject(HttpReturnType.Success, 
-                            (image) ? Services.ExecProfileManagerInstance.GetActiveImageProfiles() 
-                                : Services.ExecProfileManagerInstance.GetActiveProfiles()).ToJson();
+                            (image) ? this._ExecProfileManager.GetActiveImageProfiles() 
+                                : this._ExecProfileManager.GetActiveProfiles()).ToJson();
             });
         }
  
@@ -216,7 +231,7 @@ namespace LangaraCPSC.WebAPI.Controllers
         {
             return await Task.Run(() =>
             {
-                if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[]{ "ExecCreate" }))
+                if (!this._ApiKeyManager.IsValid(apikey, new string[]{ "ExecCreate" }))
                     return new HttpError(HttpErrorType.Forbidden, "403: Forbidden").ToJson();
            
                 ExecImageBase64 image = null;
@@ -227,10 +242,10 @@ namespace LangaraCPSC.WebAPI.Controllers
                    
                     image = new ExecImageBase64(id, request["buffer"].ToString(), request["path"].ToString());
 
-                    if (!Services.ExecImageManagerInstance.ExecImageExists(id))
-                        Services.ExecImageManagerInstance.AddExecImage(image);
+                    if (!this._ExecImageManager.ExecImageExists(id))
+                        this._ExecImageManager.AddExecImage(image);
                     else
-                        Services.ExecImageManagerInstance.UpdateImage(id, image.Path);
+                        this._ExecImageManager.UpdateImage(id, image.Path);
                 } 
                 catch (Exception e)
                 {
@@ -251,7 +266,7 @@ namespace LangaraCPSC.WebAPI.Controllers
         {
             Console.WriteLine($"Tried fetching image {id}");
 
-            if (!Services.APIKeyManagerInstance.IsValid(apikey, new string[] { "ExecRead" }))
+            if (!this._ApiKeyManager.IsValid(apikey, new string[] { "ExecRead" }))
             {
                 Console.WriteLine($"Invalid key provided");
                 
@@ -260,17 +275,27 @@ namespace LangaraCPSC.WebAPI.Controllers
            
             return await Task.Run(() => {
                 ExecImageBase64 image = null;
-                
-                if ((image = Services.ExecImageManagerInstance.GetImageByID(id)) == null)
-                    return new HttpError(HttpErrorType.FileNotFoundError, $"Image with ID \"{id}\" was not found.").ToJson();
-                    
+
+                try
+                {
+                    image = this._ExecImageManager.GetImageByID(id);
+                }
+                catch (Exception)
+                {
+                    return new HttpError(HttpErrorType.FileNotFoundError, $"Image with ID \"{id}\" was not found.")
+                        .ToJson();
+                }
+
                 return new HttpObject(HttpReturnType.Success, image).ToJson();
             });
         } 
 
-        public ExecController(IExecManager execManager)
+        public ExecController(IExecManager execManager, IExecProfileManager profileManager, IExecImageManager imageManager, APIKeyManager apiKeyManager)
         {
             this._ExecManager = execManager as ExecManager;
+            this._ExecImageManager = imageManager as ExecImageManager;
+            this._ExecProfileManager = profileManager as ExecProfileManager;
+            this._ApiKeyManager = apiKeyManager as APIKeyManager;
         }
     }
 }  

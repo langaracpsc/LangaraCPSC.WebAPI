@@ -32,7 +32,12 @@ namespace LangaraCPSC.WebAPI
         {
             string[] split = file.Split('/');
 
-            return new ExecImageBase64(int.Parse((split[^1].Split('.'))[0]), Convert.ToBase64String(FileIO.ReadBytesFromFile(file)));
+            string front = split[^1].Split('.')[0];
+
+            int parsed = 0;
+            int.TryParse((split[^1].Split('.'))[0], out parsed);
+
+            return new ExecImageBase64(parsed, Convert.ToBase64String(FileIO.ReadBytesFromFile(file)), file);
         }
 
         public static ExecImageBase64 FromModel(DbModels.Execimage image, string? imageDir = null)

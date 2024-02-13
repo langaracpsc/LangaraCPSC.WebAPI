@@ -17,6 +17,9 @@ builder.Services.AddDbContext<LCSDBContext>();
 builder.Services.AddDbContext<APIKeyDBContext>();
 
 builder.Services.AddScoped<IExecManager, ExecManager>();
+builder.Services.AddScoped<APIKeyManager>();
+builder.Services.AddScoped<IExecImageManager, ExecImageManager>();
+builder.Services.AddScoped<IExecProfileManager, ExecProfileManager>();
 
 builder.Services.AddCors(options =>
 {
@@ -71,14 +74,8 @@ foreach (string key in configKeys)
 }
 
 
-APIKeyDBContext dbContext = new APIKeyDBContext();
-
 // Services.ExecImageManagerInstance = new ExecImageManager(config);
 // Services.ExecProfileManagerInstance = new ExecProfileManager(config, "ExecProfiles", "Execs", Services.ExecImageManagerInstance);
-Services.APIKeyManagerInstance = new APIKeyManager(dbContext);
-Services.EventManagerInstance = new EventManager(environmentVariables["CAL_ID"].ToString());
-
-Services.APIKeyManagerInstance.LoadKeys();
 
 // Services.APIKeyManagerInstance.AddAPIKey(new APIKeyBuilder().SetUserID("100401242")
 //     .SetKeyValidityTime(new KeyValidityTime(DateTime.Now))

@@ -230,10 +230,18 @@ namespace LangaraCPSC.WebAPI
                 
             if ((execs = this.GetActiveExecs()) == null)
                 return null;
+        
+            Dictionary<long, Exec> execMap = new Dictionary<long, Exec>();
 
-            return this.DBContext.Execprofiles.Where(e => execs.FirstOrDefault(exec => exec.ID == e.Id) != null)
-                                        .Select(e => ExecProfile.FromModel(e))
-                                        .ToList();
+            foreach (Exec exec in execs) 
+                execMap.Add(exec.ID, exec);
+    
+            
+            foreach (Execprofile execprofile in this.DBContext.Execprofiles)
+                if (execMap.ContainsKey(execprofile.Id))
+                    profiles.Add(ExecProfile.FromModel(execprofile));
+
+            return profiles;
         }
         
         public bool DeleteProfileWithID(long id)
