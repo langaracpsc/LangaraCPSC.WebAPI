@@ -65,7 +65,22 @@ namespace LangaraCPSC.WebAPI
         public string Email { get; set; }
 
         public ExecTenure Tenure { get; set; }
-        
+
+        public static string[] PositionStrings = new string[] {
+            "President",
+            "Vice President",
+            "Vice President Internal",
+            "Vice President External",
+            "Tech Lead",
+            "Assistant Tech Lead",
+            "General Representative",
+            "Director of Public Relations",
+            "Director of Finance",
+            "Director of Events",
+            "Secratory",
+            "Directory of Media"
+        };
+
         public static Exec FromModel(DbModels.Exec model)
         {
             return new Exec(model.Id,

@@ -39,7 +39,7 @@ namespace LangaraCPSC.WebAPI.Controllers
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();  
                 
                 
-                ExecProfile profile;
+                ExecProfile? profile;
 
                 try
                 {
@@ -174,8 +174,6 @@ namespace LangaraCPSC.WebAPI.Controllers
                 try
                 {
                     this._ExecProfileManager.UpdateProfile(request.Id, request.Imageid,request.Description);
-
-                    // return new HttpObject(HttpReturnType.Success, this._ExecProfileManager.GetProfileById(request.Id)).ToJson();
                 }
                 catch (Exception e)
                 {
@@ -189,8 +187,6 @@ namespace LangaraCPSC.WebAPI.Controllers
         [HttpGet("Profile/Active")]
         public async Task<string> GetActiveProfiles([FromHeader]string apikey, [FromQuery] bool complete = false, [FromQuery] bool image = false)
         {
-            APIKey key = null;
-
             return await Task.Run(() =>
             {
                 if (!this._ApiKeyManager.IsValid(apikey, new string[]{ "ExecRead" }))

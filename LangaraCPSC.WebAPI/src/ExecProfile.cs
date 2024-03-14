@@ -35,12 +35,17 @@ namespace LangaraCPSC.WebAPI
         {
             Hashtable completeMap = this.ToMap(); 
             
-            Exec exec = manager.GetExec(this.ID);
-    
+            Exec? exec = manager.GetExec(this.ID);
+
+            Hashtable position = new Hashtable();
+
+            position.Add("ID", exec?.Position);
+            position.Add("Name", Exec.PositionStrings[(int)exec?.Position]);
+            
             completeMap.Add("Name", exec.Name);
             completeMap.Add("Email", exec.Email);
-            completeMap.Add("Position", exec.Position);
-                
+            completeMap.Add("Position", position);
+
             return completeMap;
         }
 
@@ -81,7 +86,7 @@ namespace LangaraCPSC.WebAPI
             Hashtable completeMap = base.GetComplete(manager);
  
             completeMap.Add("Image", this.Image);
-
+        
             return completeMap;
         }
 
