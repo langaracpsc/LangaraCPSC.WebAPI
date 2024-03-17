@@ -193,7 +193,9 @@ namespace LangaraCPSC.WebAPI
 
         public List<Exec> GetActiveExecs()
         {
-            return this.DBContext.Execs.Where(e => e.Tenureend == null)
+            string defaultDate = (new DateTime()).ToString();
+
+            return this.DBContext.Execs.Where(e => e.Tenureend == defaultDate)
                     .Select(e => Exec.FromModel(e))
                     .ToList(); 
         }
