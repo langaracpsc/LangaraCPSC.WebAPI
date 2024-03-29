@@ -11,3 +11,4 @@
 **/.env
 **/keyfile_conf.json
 **/CalendarEvents
+**/export.sh
