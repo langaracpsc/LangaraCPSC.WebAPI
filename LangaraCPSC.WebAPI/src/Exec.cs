@@ -1,4 +1,5 @@
 using LangaraCPSC.WebAPI.DbModels;
+using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 
 namespace LangaraCPSC.WebAPI
@@ -129,13 +130,11 @@ namespace LangaraCPSC.WebAPI
 
         Exec? GetExec(long id);
         
-        Exec UpdateExec(DbModels.Exec updateModel);
+        Exec? UpdateExec(DbModels.Exec updateModel);
     }
 
     public class ExecManager : IExecManager
     {
-        public string ExecTableName;
-
         public Dictionary<long, Exec> ExecMap;
 
         private readonly LCSDBContext _DbContext;
@@ -170,29 +169,44 @@ namespace LangaraCPSC.WebAPI
             if (exec == null)  
                 throw new Exception($"Exec with ID \"{id}\" not found.");
 
-            if (DateTime.Parse(exec.Tenureend) == new DateTime())
+            if (exec.Tenureend == new DateTime().ToString())
                 exec.Tenureend = DateTime.Now.ToString();
 
             this._DbContext.SaveChanges();
         }
         
         public List<Exec> GetExecs()
-        {
+        {   
             return this._DbContext.Execs.Select(e => Exec.FromModel(e)).ToList();
         }
 
         public Exec? GetExec(long id)
         {
+            if (this.ExecMap.ContainsKey(id))
+                return this.ExecMap[id];
+
             DbModels.Exec? exec = this._DbContext.Execs.Where(e => e.Id == id).FirstOrDefault();
 
-            return (exec != null) ? Exec.FromModel(exec) : null;
+            if (exec ==  null)
+                return null;
+       
+            Exec e = Exec.FromModel(exec);
+        
+            this.ExecMap.Add(id, e);
+            
+            return this.ExecMap[id];
         }
 
         public bool DeleteExec(long id)
         {
             try
             {
-                this._DbContext.Execs.Remove(this._DbContext.Execs.Where(e => e.Id == id).FirstOrDefault());
+                DbModels.Exec? exec;
+
+                if ((exec = this._DbContext.Execs.Where(e => e.Id == id).FirstOrDefault()) == null)
+                    throw new NullReferenceException();
+                    
+                this._DbContext.Execs.Remove(exec);
                 this._DbContext.SaveChanges();
             }
             catch (Exception e)
@@ -212,13 +226,13 @@ namespace LangaraCPSC.WebAPI
             return true;
         }
 
-        public Exec? UpdateExec(DbModels.Exec updateModel)
+        public Exec? UpdateExec(DbModels.Exec? updateModel)
         {
             DbModels.Exec? exec;
 
             try
             {
-                if (updateModel.Id == null || updateModel.Id == 0)
+                if (updateModel?.Id == null || updateModel.Id == 0)
                     throw new NullReferenceException();
                 
                 exec = this._DbContext.Execs.Where(e => e.Id == updateModel.Id).FirstOrDefault();
@@ -239,11 +253,8 @@ namespace LangaraCPSC.WebAPI
             exec.Tenureend = updateModel.Tenureend ?? exec.Tenureend;
             exec.Email = updateModel.Email ?? exec.Email;
             
-            
-            
             return Exec.FromModel(exec);
         }
-
 
         public ExecManager(LCSDBContext dbContext)
         {

@@ -1,5 +1,0 @@
-export HOSTNAME="postgres_image"
-export DATABASE="postgres"
-export USERNAME="postgres"
-export PASSWORD="password"
-export PORT="5432"

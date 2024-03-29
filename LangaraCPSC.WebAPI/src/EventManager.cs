@@ -13,6 +13,10 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.VisualBasic.CompilerServices;
 using Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Helpers;
 using Calendar = Ical.Net.Calendar;
+using Newtonsoft.Json;
+using Microsoft.Win32.SafeHandles;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace LangaraCPSC.WebAPI
 {
@@ -89,7 +93,6 @@ namespace LangaraCPSC.WebAPI
             return path;
         }
 
-
         public static FileStream GetIcalFileStream(string fileName, string outputDir)
         {
             return new FileStream($"{outputDir}/{fileName}", FileMode.Open);
@@ -158,18 +161,21 @@ namespace LangaraCPSC.WebAPI
             Dictionary<string, string> dict = new Dictionary<string, string>();
 
             int index = str.IndexOf(':') + 1;
-                
+
             foreach (string pair in str.Substring(index, str.Length - index).Split(';'))
             {
                 string[] temp = pair.Split('=');
                 dict.Add(temp[0], temp[1]);
             }
-    
+            
+            if (!dict.ContainsKey("FREQ") || !dict.ContainsKey("WKST"))
+                throw new Exception("Invalid RRule string provided.");
+
             return new EventRRule {
                 Frequency = dict["FREQ"],
                 WeekStart = dict.ContainsKey("WKST") ? dict["WKST"] : null,
                 Until = dict.ContainsKey("UNTIL") ? DateTime.ParseExact(dict["UNTIL"], "yyyyMMddTHHmmssZ", null, System.Globalization.DateTimeStyles.AssumeUniversal) : DateTime.Now.AddMonths(1),
-                ByDay = dict["BYDAY"].Split(',')
+                ByDay = dict.ContainsKey("BYDAY") ? dict["BYDAY"].Split(',') : new string[]{}
             };
         }
 
@@ -186,14 +192,14 @@ namespace LangaraCPSC.WebAPI
 
         public List<Event> ToEvents(Google.Apis.Calendar.v3.Data.Event startEvent)
         {
-            List<Event> events = new List<Event>();
+                List<Event> events = new List<Event>();
 
             DateTime start = DateTime.Parse(startEvent.Start.DateTimeRaw);
 
             int days = 0;
-            
+
             for (; start.CompareTo(this.Until) < 0; start = start.AddDays(days = GetDaysByFrequency(this.Frequency, start.Year, start.Month)))
-                for (int x = 0;  x < this.ByDay.Length; x++)
+                for (int x = 0; x < this.ByDay.Length; x++)
                 {
                     DateTime end = DateTime.Parse(startEvent.End.DateTimeRaw).AddDays(days), startWeekDay = start;
 
@@ -212,7 +218,7 @@ namespace LangaraCPSC.WebAPI
                         Link = new LinkPair(startEvent.HtmlLink, null)
                     });
                 }
- 
+
             return events;
         }
     }
@@ -283,8 +289,6 @@ namespace LangaraCPSC.WebAPI
 
             string path = $"{this.ImagePath}/{fileId}.{extension}";
 
-            Console.WriteLine($"Fetching path {path}");
-
             if (!File.Exists(path))
             {
                 MemoryStream stream = new MemoryStream();
@@ -313,19 +317,23 @@ namespace LangaraCPSC.WebAPI
             
             List<Event> events = new List<Event>();
             
-           return items.Where(item => item != null && item.Summary != null).Select(item =>
+           return items.Where(item => item != null && item.Summary != null).Select(item => 
            {
                if (item.Recurrence != null && item.Recurrence.Count > 0)
                {
                     EventRRule rrule;
 
-                    Event e = (rrule = EventRRule.FromRRuleString(item.Recurrence[0]))
+                    Event? e = (rrule = EventRRule.FromRRuleString(item.Recurrence[0]))
                         .ToEvents(item)
-                        .Where(e => (DateTime.Parse(e.Start).CompareTo(DateTime.Now) >= 0))
+                        .Where(e => DateTime.Parse(e.Start).CompareTo(DateTime.Now) >= 0)
                         .FirstOrDefault();
 
+
+                    if(e == null)
+                        return new Event();
+
                     e.Link = new LinkPair($"{item.HtmlLink}&recur={item.Recurrence[0]}", ICalUtils.GenerateICalFilename(e, this.CachePath, rrule));
-                    
+
                     return e;
                }
 
@@ -341,7 +349,7 @@ namespace LangaraCPSC.WebAPI
                        : this.FetchFile((item.Attachments.Count > 1) ? item.Attachments[0].FileId : null, "png")),
                    Link = new LinkPair(item.HtmlLink, ICalUtils.GenerateICalFilename(item, this.CachePath))
                };
-           }).ToList();
+           }).Where(e => e != new Event()).ToList();
         }
             
         public static JsonObject GetCalendarConfig()
@@ -378,7 +386,6 @@ namespace LangaraCPSC.WebAPI
 
             this.Credential = GoogleCredential.FromJson(EventManager.GetCalendarConfig().ToJsonString()).CreateScoped(CalendarService.Scope.Calendar, DriveService.Scope.Drive, DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly).UnderlyingCredential as ServiceAccountCredential;
                 
-
             this._CalendarService = new CalendarService(new BaseClientService.Initializer()
             {
                 HttpClientInitializer = this.Credential,
