@@ -328,8 +328,7 @@ namespace LangaraCPSC.WebAPI
                         .Where(e => DateTime.Parse(e.Start).CompareTo(DateTime.Now) >= 0)
                         .FirstOrDefault();
 
-
-                    if(e == null)
+                    if (e == null)
                         return new Event();
 
                     e.Link = new LinkPair($"{item.HtmlLink}&recur={item.Recurrence[0]}", ICalUtils.GenerateICalFilename(e, this.CachePath, rrule));
@@ -354,19 +353,20 @@ namespace LangaraCPSC.WebAPI
             
         public static JsonObject GetCalendarConfig()
         {
-            JsonObject config = new JsonObject();
-            
-            config.Add("type", Environment.GetEnvironmentVariable("CAL_ACCOUNT_TYPE"));
-            config.Add("project_id", Environment.GetEnvironmentVariable("CAL_PROJECT_ID"));
-            config.Add("private_key_id", Environment.GetEnvironmentVariable("CAL_PRIVATE_KEY_ID"));
-            config.Add("private_key", Environment.GetEnvironmentVariable("CAL_PRIVATE_KEY"));
-            config.Add("client_email", Environment.GetEnvironmentVariable("CAL_CLIENT_EMAIL"));
-            config.Add("client_id", Environment.GetEnvironmentVariable("CAL_CLIENT_ID"));
-            config.Add("auth_uri", Environment.GetEnvironmentVariable("CAL_AUTH_URI"));
-            config.Add("token_uri", Environment.GetEnvironmentVariable("CAL_TOKEN_URI"));
-            config.Add("auth_provider_x509_cert_url", Environment.GetEnvironmentVariable("CAL_PROVIDER_X509_CERT_URL"));
-            config.Add("client_x509_cert_url", Environment.GetEnvironmentVariable("CAL_CLIENT_X509_CERT_URL"));
-            config.Add("universe_domain", Environment.GetEnvironmentVariable("CAL_UNIVERSE_DOMAIN"));
+            JsonObject config = new JsonObject
+            {
+                { "type", Environment.GetEnvironmentVariable("CAL_ACCOUNT_TYPE") },
+                { "project_id", Environment.GetEnvironmentVariable("CAL_PROJECT_ID") },
+                { "private_key_id", Environment.GetEnvironmentVariable("CAL_PRIVATE_KEY_ID") },
+                { "private_key", Environment.GetEnvironmentVariable("CAL_PRIVATE_KEY") },
+                { "client_email", Environment.GetEnvironmentVariable("CAL_CLIENT_EMAIL") },
+                { "client_id", Environment.GetEnvironmentVariable("CAL_CLIENT_ID") },
+                { "auth_uri", Environment.GetEnvironmentVariable("CAL_AUTH_URI") },
+                { "token_uri", Environment.GetEnvironmentVariable("CAL_TOKEN_URI") },
+                { "auth_provider_x509_cert_url", Environment.GetEnvironmentVariable("CAL_PROVIDER_X509_CERT_URL") },
+                { "client_x509_cert_url", Environment.GetEnvironmentVariable("CAL_CLIENT_X509_CERT_URL") },
+                { "universe_domain", Environment.GetEnvironmentVariable("CAL_UNIVERSE_DOMAIN") }
+            };
  
             return config;
         }
