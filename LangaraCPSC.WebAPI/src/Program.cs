@@ -22,8 +22,6 @@ builder.Services.AddScoped<IEventManager, EventManager>();
 builder.Services.AddScoped<IExecImageManager, ExecImageManager>();
 builder.Services.AddScoped<IExecProfileManager, ExecProfileManager>();
 
-builder.Services.AddOutputCache();
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CORS", policy =>
@@ -40,7 +38,6 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseCors("CORS");
-app.UseOutputCache();
 
 app.UseStaticFiles(new StaticFileOptions()
 {

@@ -335,7 +335,7 @@ namespace LangaraCPSC.WebAPI
 
                     return e;
                }
-            
+
                return new Event
                {
                    Title = item.Summary ?? "Unknown",
