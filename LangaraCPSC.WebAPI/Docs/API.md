@@ -164,5 +164,47 @@ Body: {
 Permissions: ExecRead
 </pre>
 
- 
- 
+* /Event/ListAll
+<pre>
+Returns all the events in the database. 
+
+Method: GET
+Headers: {
+    apikey: string
+}
+Permissions: ExecRead
+</pre>
+
+* /Event/{year}/{max}
+<pre>
+Returns the maximum number of events for a given year.
+
+Method: GET
+Route Params: {
+    year: int,
+    max: int
+}
+Headers: {
+    apikey: string
+}
+Permissions: ExecRead
+</pre>
+
+* /Event/Calendar
+<pre>
+Returns the calendar invite link for events.
+
+Method: GET
+Headers: None
+</pre>
+
+* /Event/ICal/{fileName}
+<pre>
+Returns the iCal file for a given file name.
+
+Method: GET
+Route Params: {
+    fileName: string
+}
+Headers: None
+</pre> 
