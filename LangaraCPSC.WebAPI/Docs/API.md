@@ -1,6 +1,6 @@
 ## API Endpoints 
 
-* /Exec/ListAll
+### /Exec/ListAll
 <pre>
 Returns all the Execs in the database. 
 
@@ -12,7 +12,7 @@ Headers: {
 Permissions: ExecRead
 </pre>
 
-* /Exec/Create
+### /Exec/Create
 <pre>
 Creates an Exec and adds it to the database.
 
@@ -31,8 +31,7 @@ Body {
 Permissions: ExecRead
 </pre>
 
-
-* /Exec/Update
+### /Exec/Update
 <pre>
 Updates an Exec with the given info. 
 
@@ -47,7 +46,7 @@ Body {
 }
 </pre>
 
-* /Exec/End
+### /Exec/End
 <pre>
 Ends the tenure of the given Exec.
 
@@ -63,7 +62,7 @@ Body {
 Permissions: ExecEnd
 </pre>
 
-*  /Exec/Profile/Active?image=false&complete=false
+### /Exec/Profile/Active?image=false&complete=false
 <pre>
 Returns the profiles of all the active execs.
 
@@ -80,7 +79,7 @@ Headers: {
 Permissions: ExecRead
 </pre>
 
-*  /Exec/Profile/{id}
+### /Exec/Profile/{id}
 <pre>
 Returns the profiles of all the active execs.
 
@@ -96,7 +95,7 @@ Headers: {
 Permissions: ExecRead
 </pre>
 
-*  /Exec/Profile/Create
+### /Exec/Profile/Create
 <pre>
 Creates an Exec profile with the given info.
 Method: GET
@@ -113,7 +112,7 @@ Body: {
 Permissions: ExecCreate
 </pre>
 
-*  /Exec/Profile/Update
+### /Exec/Profile/Update
 <pre>
 Updates an Exec profile with the given info.
 
@@ -131,7 +130,7 @@ Body: {
 Permissions: ExecUpdate
 </pre>
 
-*  /Exec/Image/{id}
+### /Exec/Image/{id}
 <pre>
 Returns the image with the given id.
 
@@ -147,7 +146,7 @@ Headers: {
 Permissions: ExecRead
 </pre>
 
-*  /Exec/Image/Create
+### /Exec/Image/Create
 <pre>
 Creates an image for the given Exec id.
 
@@ -164,7 +163,7 @@ Body: {
 Permissions: ExecRead
 </pre>
 
-* /Event/ListAll
+### /Event/ListAll
 <pre>
 Returns all the events in the database. 
 
@@ -175,7 +174,7 @@ Headers: {
 Permissions: ExecRead
 </pre>
 
-* /Event/{year}/{max}
+### /Event/{year}/{max}
 <pre>
 Returns the maximum number of events for a given year.
 
@@ -190,7 +189,7 @@ Headers: {
 Permissions: ExecRead
 </pre>
 
-* /Event/Calendar
+### /Event/Calendar
 <pre>
 Returns the calendar invite link for events.
 
@@ -198,7 +197,7 @@ Method: GET
 Headers: None
 </pre>
 
-* /Event/ICal/{fileName}
+### /Event/ICal/{fileName}
 <pre>
 Returns the iCal file for a given file name.
 
