@@ -1,5 +1,8 @@
+using System.Net.Http.Headers;
 using LangaraCPSC.WebAPI.DbModels;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.Update;
 using Newtonsoft.Json;
 
 namespace LangaraCPSC.WebAPI
@@ -378,10 +381,19 @@ namespace LangaraCPSC.WebAPI
                 if (updateModel?.Id == null || updateModel.Id == 0)
                     throw new NullReferenceException();
 
-                exec = this._DbContext.Execs.Where(e => e.Id == updateModel.Id).FirstOrDefault();
+                exec = this._DbContext.Execs.First(e => e.Id == updateModel.Id);
 
                 if (exec == null)
                     throw new Exception($"Exec with id {updateModel.Id} not found");
+                
+                exec.Firstname = updateModel.Firstname ?? exec.Firstname;
+                exec.Lastname = updateModel.Lastname ?? exec.Lastname;
+                exec.Position = updateModel.Position ?? exec.Position;
+                exec.Tenurestart = updateModel.Tenurestart ?? exec.Tenurestart;
+                exec.Tenureend = updateModel.Tenureend ?? exec.Tenureend;
+                exec.Email = updateModel.Email ?? exec.Email;
+
+                this._DbContext.SaveChanges();
             }
             catch (NullReferenceException e)
             {
@@ -389,14 +401,14 @@ namespace LangaraCPSC.WebAPI
                 throw;
             }
 
-            exec.Firstname = updateModel.Firstname ?? exec.Firstname;
-            exec.Lastname = updateModel.Lastname ?? exec.Lastname;
-            exec.Position = updateModel.Position ?? exec.Position;
-            exec.Tenurestart = updateModel.Tenurestart ?? exec.Tenurestart;
-            exec.Tenureend = updateModel.Tenureend ?? exec.Tenureend;
-            exec.Email = updateModel.Email ?? exec.Email;
+            Exec updated = Exec.FromModel(exec);
 
-            return Exec.FromModel(exec);
+            if (this.ExecMap.ContainsKey(updated.ID)) 
+                this.ExecMap[updated.ID] = updated;
+            else
+                this.ExecMap.Add(updated.ID, updated);
+
+            return updated;
         }
 
         /// <summary>

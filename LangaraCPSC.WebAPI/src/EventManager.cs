@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
@@ -9,14 +8,7 @@ using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.VisualBasic.CompilerServices;
-using Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Helpers;
 using Calendar = Ical.Net.Calendar;
-using Newtonsoft.Json;
-using Microsoft.Win32.SafeHandles;
-using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace LangaraCPSC.WebAPI
 {
@@ -370,7 +362,14 @@ namespace LangaraCPSC.WebAPI
  
             return config;
         }
-        
+
+        public List<Event> GetMaxEvents(int year, int max)
+        {
+            List<Event> events = this.GetEvents().Where(e => e.Start != null && DateTime.Parse(e.Start).Year == year).ToList(); 
+
+            return (events.Count > 0) ? events.Slice(0, events.Count >= max ? max : events.Count) : events;
+        }
+
         public EventManager(string cachePath = "CalendarEvents", string imagePath = "Images")
         {
             this.CalendarID = Environment.GetEnvironmentVariable("CAL_ID");

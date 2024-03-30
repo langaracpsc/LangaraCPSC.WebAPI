@@ -38,7 +38,6 @@ namespace LangaraCPSC.WebAPI.Controllers
                 if (!this._ApiKeyManager.IsValid(apikey, new string[]{ "ExecRead" }))
                     return new HttpError(HttpErrorType.Forbidden, "500: Forbidden").ToJson();  
                 
-                
                 ExecProfile? profile;
 
                 try
@@ -206,7 +205,6 @@ namespace LangaraCPSC.WebAPI.Controllers
                 
                 if (complete)
                 { 
-
                     List<ExecProfile> execProfiles = this._ExecProfileManager.GetActiveProfiles();
 
                     foreach (ExecProfile profile in execProfiles)

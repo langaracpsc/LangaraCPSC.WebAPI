@@ -1,4 +1,5 @@
 using LangaraCPSC.WebAPI.DbModels;
+using Newtonsoft.Json;
 
 namespace LangaraCPSC.WebAPI.Tests;
 
@@ -22,10 +23,11 @@ public class ExecManagerTest
          
         this.Manager.EndTenure(100000000);
 
-        Assert.NotNull(this.Manager.UpdateExec(new DbModels.Exec { Id = 100000000, Firstname = "Alice"}));
-        Assert.Equal(this.Manager.GetExec(100000000).Name.FirstName,"Alice");
+        this.Manager.UpdateExec(new DbModels.Exec { Id = 100000000, Firstname = "Alice"});
 
-        Assert.NotNull(this.Manager.GetExec(100000000).Tenure.End);
+        Assert.Equal("Alice", this.Manager.GetExec(100000000)?.Name.FirstName);
+
+        Assert.NotNull(this.Manager.GetExec(100000000)?.Tenure.End);
         Assert.True(this.Manager.DeleteExec(100000000));
     }
     
@@ -36,5 +38,4 @@ public class ExecManagerTest
         this.Manager = new ExecManager(dbContext);
     }
 } 
-
 

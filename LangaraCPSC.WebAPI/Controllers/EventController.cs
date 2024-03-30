@@ -24,14 +24,12 @@ namespace LangaraCPSC.WebAPI.Controllers
         
         [HttpGet("{year}/{max}")]
         [OutputCache(Duration = 60)]
-        public async Task<ActionResult<string>> GetEventsMax([FromHeader] string apikey, [FromRoute] int year, [FromRoute] int max)
+        public async Task<ActionResult<string>> GetMaxEvents([FromHeader] string apikey, [FromRoute] int year, [FromRoute] int max)
         {
             if (!this._ApiKeyManager.IsValid(apikey, new string[]{ "ExecRead" }))
                 return Forbid(new HttpError(HttpErrorType.Forbidden, "Forbidden").ToJson());  
-            
-            List<Event> events = this._EventManager.GetEvents().Where(e => e.Start != null && DateTime.Parse(e.Start).Year == year).ToList();  
 
-            return await Task.Run(() => Ok(new HttpObject(HttpReturnType.Success, (events.Count > 0) ? events.Slice(0, events.Count >= max ? max : events.Count) : events).ToJson()));
+            return await Task.Run(() => Ok(new HttpObject(HttpReturnType.Success, this._EventManager.GetMaxEvents(year, max)).ToJson()));
         }
         
         [HttpGet("Calendar")]

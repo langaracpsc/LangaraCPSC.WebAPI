@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="opendatabaseapi\OpenDatabaseAPI.csproj" />
   </ItemGroup>
 
 </Project>
